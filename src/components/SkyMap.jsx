@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import celestial from "d3-celestial";
 import './style/celestial.css';
 import './style/sky-map.css';
@@ -58,12 +58,11 @@ const DEFAULT_STYLES = {
 };
 
 /**
- *
+ * Uses https://github.com/ofrohn/d3-celestial to display a sky map.
  * @param {*} geopos [lat, lon] in decimal degrees
  * @param {*} date in ISO format, e.g. "2021-09-25T04:00:00+0000"
  * @param {*} configOverrides Overrides for config, see d3-celestial config. Can include form... other overrides later
  * @param {*} styles styles for lines and text, see DEFAULT_STYLES.
- * @param {bool} showForm boolean to show the form or not
  * @param {*} data array of objects with geoJSON, category, lineStyle, textStyle.
  * - geoJSON: a GeoJSON object or URL to a GeoJSON file
  * - category: a string to categorize the data, used for styling.
@@ -72,23 +71,23 @@ const DEFAULT_STYLES = {
  * @param {*} width the width of the map container
  * @returns
  */
-function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+0000", configOverrides = {}, data=[], width = 400, showForm, styles = DEFAULT_STYLES}) {
+function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+0000", configOverrides = {}, data=[], width = 400, styles = DEFAULT_STYLES}) {
   const { lineStyles = styles.lineStyles, textStyles = styles.textStyles } = styles;
   const containerRef = useRef(null);
+  const [showForm, setShowForm] = useState(false);
   // const dimensions = useResizeObserver(containerRef);
   const config = useMemo(() => ({
         ...DEFAULT_CONFIG,
         container: "map",
         width,
-        form: false,
         ...(configOverrides || {}),
 
-    }), [configOverrides, geopos, width]);
+    }), [configOverrides, width]);
   // manage redraw on date change or config change
   useEffect(() => {
       Celestial.display(config);
-      Celestial.skyview({ date });
-    }, [config, date]);
+      Celestial.skyview({ date, location: geopos});
+    }, [config, geopos, date, data]);
 
   // manage data display
   useEffect(() => {
@@ -142,14 +141,22 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
   }
 
   const Celestial = window.Celestial;
-  return (<div>
-      <div
-        ref={containerRef} id="map-container"
-        className={`sky-map-container ${showForm ? 'showform' : ''}`}>
-        <div id="map"></div>
+  return (<>
+      <div id="map-section" className={showForm ? 'show-form' : ''}>
+        <div
+          ref={containerRef} id="map-container"
+          className={`sky-map-container ${showForm ? 'showform' : ''}`}>
+          <div id="map"></div>
+          <div id="celestial-form" style={{display: showForm ? 'block' : 'none'}} />
+        </div>
       </div>
-      <button id="toggle-form" onClick={() => Celestial.clear()}>clear</button>
+      <div id="controls-section">
+        <button id="toggle-form" onClick={() => Celestial.clear()}>clear</button>
+        <button id="toggle-form" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Hide Form' : 'Show Form'}
+        </button>
       </div>
+      </>
   );
 }
 export default SkyMap;

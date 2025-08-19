@@ -1,5 +1,16 @@
 /* customizations */
 
-.showform {
+#celestial-form {
+  display: none
+}
+.showform #celestial-form {
   display: block;
+  position: fixed;
+  z-index: 10000;
+  background-color: white;
+  bottom: 0;
+  max-height: 50%;
+  border: 1px solid #ccc;
+  left: calc(10%);
+  width: 90%;
 }

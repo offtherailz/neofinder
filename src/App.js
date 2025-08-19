@@ -56,7 +56,6 @@ function App() {
   const [horizonData, setHorizonData] = useState();
   const [asteroids, setAsteroids] = useState();
   const [refreshAsteroids, setRefreshAsteroids] = useState(false);
-  const [showForm, setShowForm] = useState(true);
   const [selectedAsteroids, setSelectedAsteroids] = useState(new Set());
   useEffect(() => {
     fetchAsteroids().then(data => {
@@ -66,7 +65,7 @@ function App() {
 
   useEffect(() => {
     if (position) {
-      const data = getVirtualHorizonByAltitude(position.latitude, position.longitude, new Date(), 70, 360);
+      const data = getVirtualHorizonByAltitude(position.latitude, position.longitude, new Date(), 10, 360);
       setHorizonData(data);
     }
   }, [position]);
@@ -101,14 +100,10 @@ function App() {
         <div class="controls">
           <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
         </div>
-        <button style={{backgroundColor: showForm ? 'red' : 'green'}} onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Hide Form' : 'Show Form'}
-        </button>
 
       </header>
       <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
         <SkyMap data={data}
-        showForm={showForm}
         geopos={position ? [position.latitude, position.longitude] : undefined}
         configOverrides={configOverrides} />
         <MyPosition

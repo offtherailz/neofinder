@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid, SelectColumn } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 
-const GEOJSON_URL = 'https://www.minorplanetcenter.net/Extended_Files/neocp.json';
-
 export function NeocpAsteroidsTable({
     asteroids,
     selectedAsteroids = [],
@@ -52,11 +50,10 @@ export function NeocpAsteroidsTable({
         : String(b[columnKey]).localeCompare(String(a[columnKey]));
     });
   }
-  function rowKeyGetter(row: Row) {
+  function rowKeyGetter(row) {
     return row.name;
     }
-  return (
-    <div id="NeocpAsteroidsTable" style={{ height: 600, width: '100%' }}>
+  return (<div id="NeocpAsteroidsTable" style={{ height: 600, width: '100%' }}>
       <DataGrid
         rowKeyGetter={rowKeyGetter}
         columns={columns}
@@ -66,8 +63,15 @@ export function NeocpAsteroidsTable({
         selectedRows={selectedAsteroids}
         onSelectedRowsChange={setSelectedAsteroids}
       />
+    <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
+        {selectedAsteroids.length > 0 && (
+            `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
+        )}
+        {asteroids && asteroids.features.length > 0 && (
+            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} found.`
+        )}
     </div>
-  );
+    </div>)
 }
 
 export default NeocpAsteroidsTable;

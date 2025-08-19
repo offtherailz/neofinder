@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // Funzione per il calcolo dell'orizzonte (rimane la stessa)
-const getVirtualHorizon = (latitude, longitude, radiusKm, steps = 360) => {
+export const getVirtualHorizon = (latitude, longitude, radiusKm, steps = 360) => {
   const EARTH_RADIUS_KM = 6371;
   const coordinates = [];
 
@@ -80,8 +80,6 @@ const HorizonViewer = ({position, setPosition, horizonData, setHorizonData}) => 
           <p>Longitudine: {position.longitude.toFixed(4)}</p>
         </div>
       )}
-
-
     </div>
   );
 };
