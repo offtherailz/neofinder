@@ -3,8 +3,10 @@ import { DataGrid, SelectColumn } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { applyAsteroidsFilter } from '../utils';
 import { FaFilter } from 'react-icons/fa';
+import { feature } from 'turf';
 
 export function NeocpAsteroidsTable({
+    filteredAsteroids,
     asteroids,
     selectedAsteroids = [],
     setSelectedAsteroids,
@@ -20,14 +22,14 @@ export function NeocpAsteroidsTable({
 
   useEffect(() => {
       // Each feature has a 'properties' object
-      const features = asteroids?.features || [];
+      const features = filteredAsteroids?.features || [];
       if (features.length === 0) return;
 
       // Get all property keys from the first feature
       const propertyKeys = Object.keys(features[0].properties);
 
       // Build columns config
-      const cols = propertyKeys.map(key => ({
+      const cols = propertyKeys.filter(k => k !== "itemData").map(key => ({
         key,
         name: key,
         sortable: true,
@@ -39,7 +41,7 @@ export function NeocpAsteroidsTable({
 
       setColumns([SelectColumn, ...cols]);
       setRows(rowsArr);
-      }, [asteroids, filter]);
+      }, [filteredAsteroids?.features, filter]);
 
   // Sorting logic
   function getSortedRows(rows, sortColumns) {
@@ -72,11 +74,16 @@ export function NeocpAsteroidsTable({
       />
     <div>
     <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
+        {
+          filteredAsteroids?.features.length > 0 && (
+             `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
+          )
+        }
         {selectedAsteroids.length > 0 && (
             `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
         )}
         {asteroids && asteroids.features.length > 0 && (
-            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} found.`
+            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
         )}
     </div>
     <div>

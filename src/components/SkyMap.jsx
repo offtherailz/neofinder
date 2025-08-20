@@ -9,7 +9,6 @@ const DEFAULT_CONFIG = {
   container: "map",
   form: true,
   projection: "airy",
-  center: [-65, 0],
   background: { fill: "#fff", stroke: "#000", opacity: 1, width: 1 },
   datapath: "https://ofrohn.github.io/data/",
   stars: {
@@ -147,7 +146,7 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
     return <div>Loading...</div>;
   }
 
-  return (<>
+  return (<div className="sky-map">
       <div id="map-section" className={showForm ? 'show-form' : ''}>
         <div
           ref={containerRef} id="map-container"
@@ -156,13 +155,13 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
           <div id="celestial-form" style={{display: showForm ? 'block' : 'none'}} />
         </div>
       </div>
-      <div id="controls-section">
+      <div className="sky-map-controls-section">
         <button id="toggle-form" onClick={() => Celestial.clear()}>clear</button>
         <button id="toggle-form" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Hide Form' : 'Show Form'}
         </button>
       </div>
-      </>
+      </div>
   );
 }
 export default SkyMap;

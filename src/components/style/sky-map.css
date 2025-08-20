@@ -9,8 +9,20 @@
   z-index: 10000;
   background-color: white;
   bottom: 0;
+  right: 0;
   max-height: 50%;
   border: 1px solid #ccc;
-  left: calc(10%);
-  width: 90%;
+  width: 750px;
+  overflow: auto;
 }
+#map-section {
+  position: relative;
+}
+#sky-map-controls-section {
+position: absolute;
+top: 0;
+right:0;
+}
+
+
+

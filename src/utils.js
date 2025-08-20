@@ -182,6 +182,65 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
     }]
   };
 }
+
+
+function filterMPCFeatureCollection(features, lat, lon, date = new Date(), horizon = 20) {
+  const deg2rad = d => d * Math.PI / 180;
+  const rad2deg = r => r * 180 / Math.PI;
+
+  const latRad = deg2rad(lat);
+  const lonRad = deg2rad(lon);
+
+  function localSiderealTime(date, lon) {
+    const JD = (date.getTime() / 86400000.0) + 2440587.5;
+    const D = JD - 2451545.0;
+    let GMST = 280.46061837 + 360.98564736629 * D;
+    GMST = (GMST % 360 + 360) % 360;
+    return deg2rad(GMST) + lon;
+  }
+
+  const lst = localSiderealTime(date, lonRad);
+
+  const visibleFeatures = features
+    .map(f => {
+      const d = f?.properties?.itemData ?? {};
+      if (!d["R.A."] || !d["Decl."]) return null;
+
+      const ra = deg2rad(d["R.A."]);   // RA in gradi
+      const dec = deg2rad(d["Decl."]); // Dec in gradi
+
+      // Angolo orario
+      let H = lst - ra;
+      H = ((H + Math.PI) % (2 * Math.PI)) - Math.PI;
+
+      // Altezza
+      const sinAlt = Math.sin(dec) * Math.sin(latRad) +
+                     Math.cos(dec) * Math.cos(latRad) * Math.cos(H);
+      const alt = Math.asin(sinAlt);
+
+      // Azimut
+      const y = -Math.sin(H);
+      const x = Math.cos(dec) * Math.sin(latRad) -
+                Math.sin(dec) * Math.cos(latRad) * Math.cos(H);
+      let az = Math.atan2(y, x);
+      az = (az % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+
+      // Clona la feature aggiungendo alt e az nelle properties
+      return {
+        ...f,
+        properties: {
+          ...f.properties,
+          alt: rad2deg(alt),
+          az: rad2deg(az)
+        }
+      };
+    })
+    .filter(f => f && f.properties.alt >= horizon);
+
+  return visibleFeatures;
+}
+
+
 /**
  *
  * @param {FeatureCollection} asteroids feature collection of asteroids in GeoJSON format
@@ -196,19 +255,19 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
  * @returns
  */
 export function applyAsteroidsFilter(asteroids, filter, filterData) {
+
   if (!asteroids || !filter || !asteroids?.features) return asteroids;
   let { features } = asteroids;
   if( filter?.horizon && filterData?.horizonData) {
-    const { horizonData, position, time, activeHorizon, horizonHeight } = filterData;
+    const { position, time, activeHorizon, horizonHeight } = filterData;
     if (activeHorizon) {
-      const visibleObjects = filterVisibleObjects(
+      features = filterMPCFeatureCollection(
         features,
         position.latitude,
         position.longitude,
         time,
         horizonHeight
-      );
-      features = visibleObjects;
+      )
     }
   }
   return {
@@ -216,5 +275,53 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
     features
   }
 
-
 }
+
+export function zenithRADec(latDeg, lonDeg, date = new Date()) {
+
+  const norm360 = d => ((d % 360) + 360) % 360;
+
+  // Julian Day (UTC)
+  const JD = date.getTime() / 86400000 + 2440587.5;
+  const D  = JD - 2451545.0;
+
+  // GMST in gradi (formula compatta, sufficiente per mappe)
+  let GMST = 280.46061837 + 360.98564736629 * D;
+  GMST = norm360(GMST);
+
+  // Longitudine EST positiva
+  const LSTdeg = norm360(GMST + lonDeg);
+
+  // RA dello zenit in gradi (converti in ore se vuoi: /15)
+  const RA_zen_deg  = LSTdeg;
+  const Dec_zen_deg = latDeg;
+
+  return {
+    ra_deg: RA_zen_deg,           // 0..360
+    ra_hours: RA_zen_deg / 15,    // 0..24
+    dec_deg: Dec_zen_deg
+  };
+}
+
+export function skyMapCenter(latDeg, lonDeg, date = new Date()) {
+
+  const norm360 = d => ((d % 360) + 360) % 360;
+
+  // Julian Day (UTC)
+  const JD = date.getTime() / 86400000 + 2440587.5;
+  const D  = JD - 2451545.0;
+
+  // GMST in gradi
+  let GMST = 280.46061837 + 360.98564736629 * D;
+  GMST = norm360(GMST);
+
+  // LST (longitudine Est positiva!)
+  const LSTdeg = norm360(GMST + lonDeg);
+
+  return [
+    LSTdeg,   // longitude = RA (gradi)
+    latDeg,   // latitude  = Dec
+    0         // orientation (0 = Nord in alto)
+  ];
+}
+

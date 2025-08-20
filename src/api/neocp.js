@@ -35,6 +35,8 @@ const neocpToGeoJSON = (json) => {
     return {
       type: "Feature",
       properties: {
+        itemData: item,
+        ...item,
         name: item.Temp_Desig,
         Temp_Desig: item.Temp_Desig,
         score: item.Score,

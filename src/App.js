@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import SkyMap from './components/SkyMap';
 import MyPosition from './components/MyPosition';
-import { applyAsteroidsFilter, getVirtualHorizonByAltitude } from './utils';
+import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter, zenithRADec } from './utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
@@ -100,10 +100,15 @@ function App() {
   }, [filteredAsteroids, activeHorizon, horizonData, asteroids, selectedAsteroids, showAsteroids]);
 
   const configOverrides = useMemo(() => {
-    return {
-      center: position ? [position.latitude, position.longitude] : undefined,
-    };
-  }, [position]);
+
+    if(position) {
+      const center = skyMapCenter(position?.latitude, position?.longitude, time ?? new Date())
+      return {
+        center: center
+      };
+    }
+    return {}
+  }, [position, time]);
 
   const saveSettings = () => {
     if (position) {
