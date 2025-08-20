@@ -5,4 +5,5 @@ export const CONFIG_KEYS = {
     AUTO_UPDATE: 'autoUpdate',
     REFRESH_TIME: 'refreshTime',
     SHOW_ASTEROIDS: 'showAsteroids',
+    FILTER: 'filter',
 };

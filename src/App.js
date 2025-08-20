@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import SkyMap from './components/SkyMap';
 import MyPosition from './components/MyPosition';
-import { getVirtualHorizonByAltitude } from './utils';
+import { applyAsteroidsFilter, getVirtualHorizonByAltitude } from './utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
@@ -46,7 +46,9 @@ function App() {
     });
   const [refreshAsteroids, setRefreshAsteroids] = useState(false);
   const [selectedAsteroids, setSelectedAsteroids] = useState(new Set());
-  const [filter, setFilter] = useState({});
+  const [filter, setFilter] = useState(() => {
+    return getSetting(CONFIG_KEYS.FILTER) || {};
+  });
 
   // load asteroids
   useEffect(() => {
@@ -63,15 +65,28 @@ function App() {
     }
   }, [time, activeHorizon, position, horizonHeight]);
 
-  //
+  const filterData = useMemo(() => {
+    return {
+      horizonData,
+      position,
+      time,
+      activeHorizon,
+      horizonHeight,
+    };
+  }, [horizonData, position, time, activeHorizon, horizonHeight]);
+  const filteredAsteroids = useMemo(() => {
+    if (!asteroids || !filter) return asteroids;
+    return applyAsteroidsFilter(asteroids, filter, filterData);
+  }, [asteroids, filter, filterData]);
   const data = useMemo(() => {
+
     return [
       ...(horizonData && activeHorizon ? [{
         geoJSON: horizonData,
         category: "horizon"
       }] : []),
-      ...(asteroids && showAsteroids ? [{
-        geoJSON: asteroids,
+      ...(asteroids && filteredAsteroids && showAsteroids ? [{
+        geoJSON: filteredAsteroids,
         category: "asteroids"
       }] : []),
       ...(selectedAsteroids.size > 0 && asteroids?.features ? [{
@@ -82,7 +97,7 @@ function App() {
         category: "selected"
       }] : []),
     ];
-  }, [activeHorizon, horizonData, asteroids, selectedAsteroids, showAsteroids, filter]);
+  }, [filteredAsteroids, activeHorizon, horizonData, asteroids, selectedAsteroids, showAsteroids]);
 
   const configOverrides = useMemo(() => {
     return {
@@ -103,6 +118,8 @@ function App() {
     saveSetting(CONFIG_KEYS.AUTO_UPDATE, autoUpdate);
     saveSetting(CONFIG_KEYS.REFRESH_TIME, refreshTime);
     saveSetting(CONFIG_KEYS.SHOW_ASTEROIDS, showAsteroids);
+    saveSetting(CONFIG_KEYS.FILTER, filter);
+    console.log("Settings saved");
 
   };
   return (
@@ -137,7 +154,9 @@ function App() {
         configOverrides={configOverrides} />
       </div>
       <NeocpAsteroidsTable
+          filterData={filterData}
           asteroids={asteroids}
+          filteredAsteroids={filteredAsteroids}
           refreshAsteroids={refreshAsteroids}
           setRefreshAsteroids={setRefreshAsteroids}
           selectedAsteroids={selectedAsteroids}

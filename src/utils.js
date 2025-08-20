@@ -1,3 +1,4 @@
+
 export const deg2rad = d => d * Math.PI / 180;
 export const rad2deg = r => r * 180 / Math.PI;
 
@@ -181,9 +182,39 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
     }]
   };
 }
+/**
+ *
+ * @param {FeatureCollection} asteroids feature collection of asteroids in GeoJSON format
+ * @param {Object} filter contains:
+ * - horizon: boolean, if true, filter by horizon
+ * @param {*} filterData contains:
+ * - horizonData: GeoJSON FeatureCollection of the horizon
+ * - position: {latitude, longitude} of the observer
+ * - time: Date object of the observation time
+ * - activeHorizon: boolean, if true, the horizon is active
+ * - horizonHeight: number, height of the horizon in degrees
+ * @returns
+ */
+export function applyAsteroidsFilter(asteroids, filter, filterData) {
+  if (!asteroids || !filter || !asteroids?.features) return asteroids;
+  let { features } = asteroids;
+  if( filter?.horizon && filterData?.horizonData) {
+    const { horizonData, position, time, activeHorizon, horizonHeight } = filterData;
+    if (activeHorizon) {
+      const visibleObjects = filterVisibleObjects(
+        features,
+        position.latitude,
+        position.longitude,
+        time,
+        horizonHeight
+      );
+      features = visibleObjects;
+    }
+  }
+  return {
+    ...asteroids,
+    features
+  }
 
-export function applyAsteroidsFilter(features, filter, horizonData) {
-  return features.filter(f => {
-    return true;
-  });
+
 }
