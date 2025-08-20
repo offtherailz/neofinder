@@ -1,50 +1,27 @@
 import React, { useState, useEffect } from 'react';
-
-// Funzione per il calcolo dell'orizzonte (rimane la stessa)
-export const getVirtualHorizon = (latitude, longitude, radiusKm, steps = 360) => {
-  const EARTH_RADIUS_KM = 6371;
-  const coordinates = [];
-
-  for (let i = 0; i <= steps; i++) {
-    const angle = (i * 360) / steps;
-    const bearingRad = (angle * Math.PI) / 180;
-    const latRad = (latitude * Math.PI) / 180;
-    const newLatRad = Math.asin(
-      Math.sin(latRad) * Math.cos(radiusKm / EARTH_RADIUS_KM) +
-      Math.cos(latRad) * Math.sin(radiusKm / EARTH_RADIUS_KM) * Math.cos(bearingRad)
-    );
-    const lonRad = (longitude * Math.PI) / 180;
-    let newLonRad = lonRad + Math.atan2(
-      Math.sin(bearingRad) * Math.sin(radiusKm / EARTH_RADIUS_KM) * Math.cos(latRad),
-      Math.cos(radiusKm / EARTH_RADIUS_KM) - Math.sin(latRad) * Math.sin(newLatRad)
-    );
-    const newLat = (newLatRad * 180) / Math.PI;
-    const newLon = (newLonRad * 180) / Math.PI;
-    coordinates.push([parseFloat(newLon.toFixed(4)), parseFloat(newLat.toFixed(4))]);
-  }
-
-  return {
-    "type": "FeatureCollection",
-    "features": [{
-      "type": "Feature",
-      "properties": {
-        "n": "Orizzonte virtuale"
-      },
-      "geometry": {
-        "type": "MultiLineString",
-        "coordinates": [coordinates]
-      }
-    }]
-  };
-};
-
-const HorizonViewer = ({position, setPosition, horizonData, setHorizonData}) => {
+import { FaMapMarkerAlt, FaUndo, FaSave, FaCity, FaPlay, FaPause } from 'react-icons/fa';
+import UTCDateTimePicker from './UTCDateTimePicker';
+import './style/position.css';
+const MyPosition = ({
+  position,
+  setPosition,
+  setActiveHorizon,
+  activeHorizon,
+  horizonData,
+  saveSettings,
+  horizonHeight,
+  setHorizonHeight,
+  time,
+  setTime,
+  autoUpdate,
+  setAutoUpdate
+}) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const getMyPosition = () => {
     if (!navigator.geolocation) {
-      setError('La geolocalizzazione non è supportata dal tuo browser.');
+      setError('Geolocation.');
       return;
     }
 
@@ -63,25 +40,76 @@ const HorizonViewer = ({position, setPosition, horizonData, setHorizonData}) => 
       }
     );
   };
-
+  // div
   return (
-    <div>
-      <h2>Visualizzatore Orizzonte</h2>
-      <button onClick={getMyPosition} disabled={isLoading}>
-        {isLoading ? 'Rilevamento...' : 'Ottieni la mia posizione'}
-      </button>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {position && (
-        <div>
-          <h3>La tua posizione:</h3>
-          <p>Latitudine: {position.latitude.toFixed(4)}</p>
-          <p>Longitudine: {position.longitude.toFixed(4)}</p>
+    <div className="position-viewer">
+      <div className="position-viewer-header">
+        <h2>Position</h2>
+        <div className="position-viewer-buttons">
+        <button title={isLoading ? "loading" : "get current position"}
+        onClick={getMyPosition}
+        disabled={isLoading}>
+          <FaMapMarkerAlt />
+        </button>
+        <button title="reset position"
+        onClick={() => setPosition(null)}>
+          <FaUndo />
+        </button>
+        <button title="save position"
+        onClick={saveSettings}>
+          <FaSave />
+        </button>
+        <button className={activeHorizon ? "button-active" : ""} title="set active horizon"
+        onClick={() => setActiveHorizon(!activeHorizon)}>
+          <FaCity />
+        </button>
+        <button className={autoUpdate ? "button-active" : ""} title="toggle auto update"
+        onClick={() => setAutoUpdate(!autoUpdate)}>
+          {autoUpdate ? <FaPause /> : <FaPlay />}
+        </button>
         </div>
-      )}
+      </div>
+      <div className="position-viewer-content">
+        <label>
+          Lat:
+          <input
+            type="number"
+            value={position?.latitude || ''}
+            onChange={(e) => setPosition({ ...position, latitude: parseFloat(e.target.value) })}
+            disabled={isLoading}
+          />
+        </label>
+        <label>
+          Lon:
+          <input
+            type="number"
+            value={position?.longitude || ''}
+            onChange={(e) => setPosition({ ...position, longitude: parseFloat(e.target.value) })}
+            disabled={isLoading}
+          />
+        </label>
+        <label>
+          Hor(deg):
+          <input
+            type="number"
+            value={horizonHeight || ''}
+            onChange={(e) => setHorizonHeight(parseFloat(e.target.value))}
+            disabled={isLoading}
+          />
+        </label>
+        <label>
+          Time:
+          <UTCDateTimePicker
+            className="time-picker"
+            value={time}
+            onChange={(newTime) => setTime(newTime)}
+            disabled={isLoading}
+          />
+        </label>
+      </div>
     </div>
+
   );
 };
 
-export default HorizonViewer;
+export default MyPosition;

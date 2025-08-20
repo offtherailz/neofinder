@@ -1,59 +1,39 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import SkyMap from './components/SkyMap';
 import MyPosition from './components/MyPosition';
 import { getVirtualHorizonByAltitude } from './utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
-const neocpToGeoJSON = (json) => {
-  // transforms the NEOCP data into a GeoJSON format
-  /*
-  "Temp_Desig": "P22dfLf",
-    "Score": 92,
-    "Discovery_year": 2025,
-    "Discovery_month": 8,
-    "Discovery_day": 19.6,
-    "R.A.": 3.7359,
-    "Decl.": 14.0856,
-    "V": 22.1,
-    "Updated": "Added Aug. 19.65 UT",
-    "NObs": 3,
-    "Arc": 0.04,
-    "H": 21.7,
-    "Not_Seen_dys": 0.04
-  },*/
-  return json.map((item) => {
-    return {
-      type: "Feature",
-      properties: {
-        name: item.Temp_Desig,
-        score: item.Score,
-        discoveryDate: `${item.Discovery_year}-${String(item.Discovery_month).padStart(2, '0')}-${String(Math.floor(item.Discovery_day)).padStart(2, '0')}`,
-        magnitude: item.V,
-        updated: item.Updated,
-        observations: item.NObs,
-        arc: item.Arc,
-        hMagnitude: item.H,
-        notSeenDays: item.Not_Seen_dys
-      },
-      geometry: {
-        type: "Point",
-        coordinates: [item["R.A."], item["Decl."]]
-      }
-    };
-  });
-};
-const fetchAsteroids = () => {
-  return fetch('https://www.minorplanetcenter.net/Extended_Files/neocp.json')
-    .then(response => response.json())
-    .then(data => {
-      return {"type": "FeatureCollection", features: neocpToGeoJSON(data)};
-    })
-    .catch(error => console.error('Error fetching asteroids:', error));
-}
-
+import { fetchAsteroids } from './api/neocp';
+import { getSetting, saveSetting } from './persistence';
+import { CONFIG_KEYS } from './constants';
+const HORIZON_RESOLUTION = 360; // points
+const TIME_UPDATE_INTERVAL = 1000;
 function App() {
-  const [position, setPosition] = useState(null);
+  // position and time
+  const [position, setPosition] = useState(() => {
+    return getSetting(CONFIG_KEYS.SAVED_POSITION) || null;
+  });
+  const [autoUpdate, setAutoUpdate] = useState(() => {
+    return getSetting(CONFIG_KEYS.AUTO_UPDATE) ?? true;
+  });
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (autoUpdate) {
+        setTime(new Date());
+      }
+    }, TIME_UPDATE_INTERVAL);
+    return () => clearInterval(interval);
+  }, [autoUpdate]);
+  const [activeHorizon, setActiveHorizon] = useState(() => {
+    return getSetting(CONFIG_KEYS.ACTIVE_HORIZON) || false;
+  });
   const [horizonData, setHorizonData] = useState();
+  const [horizonHeight, setHorizonHeight] = useState(() => {
+    const savedHeight = getSetting(CONFIG_KEYS.HORIZON_HEIGHT);
+    return savedHeight !== null ? savedHeight : 0; // default to 0 degrees
+  }); // in degrees
   const [asteroids, setAsteroids] = useState();
   const [refreshAsteroids, setRefreshAsteroids] = useState(false);
   const [selectedAsteroids, setSelectedAsteroids] = useState(new Set());
@@ -65,13 +45,13 @@ function App() {
 
   useEffect(() => {
     if (position) {
-      const data = getVirtualHorizonByAltitude(position.latitude, position.longitude, new Date(), 10, 360);
+      const data = getVirtualHorizonByAltitude(position.latitude, position.longitude, time, horizonHeight, HORIZON_RESOLUTION);
       setHorizonData(data);
     }
-  }, [position]);
+  }, [time, activeHorizon, position, horizonHeight]);
   const data = useMemo(() => {
     return [
-      ...(horizonData ? [{
+      ...(horizonData && activeHorizon ? [{
         geoJSON: horizonData,
         category: "horizon"
       }] : []),
@@ -87,12 +67,26 @@ function App() {
         category: "selected"
       }] : []),
     ];
-  }, [horizonData, asteroids, selectedAsteroids]);
+  }, [activeHorizon, horizonData, asteroids, selectedAsteroids]);
+
   const configOverrides = useMemo(() => {
     return {
       center: position ? [position.latitude, position.longitude] : undefined,
     };
   }, [position]);
+
+  const saveSettings = () => {
+    if (position) {
+      saveSetting(CONFIG_KEYS.SAVED_POSITION, position);
+    }
+    if (activeHorizon) {
+      localStorage.setItem(CONFIG_KEYS.ACTIVE_HORIZON, JSON.stringify(activeHorizon));
+    }
+    if (horizonHeight !== null) {
+      saveSetting(CONFIG_KEYS.HORIZON_HEIGHT, horizonHeight);
+    }
+
+  };
   return (
     <div className="App">
       <header className="App-header">
@@ -100,19 +94,30 @@ function App() {
         <div class="controls">
           <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
         </div>
+        <div className="position-controls">
+          <MyPosition
+          position={position}
+          setPosition={setPosition}
+          setActiveHorizon={setActiveHorizon}
+          activeHorizon={activeHorizon}
+          horizonData={horizonData}
+          saveSettings={saveSettings()}
+          horizonHeight={horizonHeight}
+          setHorizonHeight={setHorizonHeight}
+          time={time}
+          setTime={setTime}
+          autoUpdate={autoUpdate}
+          setAutoUpdate={setAutoUpdate}
+        /></div>
+
 
       </header>
       <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
         <SkyMap data={data}
-        geopos={position ? [position.latitude, position.longitude] : undefined}
+        // geopos={position ? [position.latitude, position.longitude] : undefined}
         configOverrides={configOverrides} />
-        <MyPosition
-        position={position}
-        setPosition={setPosition}
-        />
-
       </div>
-  <NeocpAsteroidsTable
+      <NeocpAsteroidsTable
           asteroids={asteroids}
           refreshAsteroids={refreshAsteroids}
           setRefreshAsteroids={setRefreshAsteroids}

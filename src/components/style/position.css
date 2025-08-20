@@ -1,0 +1,51 @@
+.position-viewer {
+  scale: 0.8;
+  max-width: 300px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.position-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.position-viewer-header h2 {
+  margin: 0;
+  font-size: 1.3em;
+}
+
+.position-viewer-buttons {
+  display: flex;
+}
+
+.position-viewer-content {
+  display: flex;
+  gap: 2px;
+  flex-direction: column;
+}
+
+.position-viewer-content label {
+  display: flex;
+  text-align: right;
+  flex: 1;
+  align-items: center;
+  font-weight: bold
+}
+
+.position-viewer-content input,
+.position-viewer-content .time-picker {
+  width: 200px;
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+}
+
+.button-active {
+  background: #014e1e;
+}
