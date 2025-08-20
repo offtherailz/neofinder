@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaMapMarkerAlt, FaUndo, FaSave, FaCity, FaPlay, FaPause } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaUndo, FaSave, FaPlay, FaPause } from 'react-icons/fa';
+import { GiHorizonRoad } from "react-icons/gi";
+import { GiAsteroid } from "react-icons/gi";
 import UTCDateTimePicker from './UTCDateTimePicker';
 import './style/position.css';
 const MyPosition = ({
@@ -14,7 +16,11 @@ const MyPosition = ({
   time,
   setTime,
   autoUpdate,
-  setAutoUpdate
+  setAutoUpdate,
+  refreshTime,
+  setRefreshTime,
+  showAsteroids = false,
+  setShowAsteroids = () => {},
 }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,11 +67,15 @@ const MyPosition = ({
         </button>
         <button className={activeHorizon ? "button-active" : ""} title="set active horizon"
         onClick={() => setActiveHorizon(!activeHorizon)}>
-          <FaCity />
+          <GiHorizonRoad />
         </button>
         <button className={autoUpdate ? "button-active" : ""} title="toggle auto update"
         onClick={() => setAutoUpdate(!autoUpdate)}>
           {autoUpdate ? <FaPause /> : <FaPlay />}
+        </button>
+        <button className={showAsteroids ? "button-active" : ""} title="toggle asteroids"
+        onClick={() => setShowAsteroids(!showAsteroids)}>
+          <GiAsteroid />
         </button>
         </div>
       </div>
@@ -105,6 +115,19 @@ const MyPosition = ({
             onChange={(newTime) => setTime(newTime)}
             disabled={isLoading}
           />
+        </label>
+        <label>
+          Refresh:
+          <select value={refreshTime} onChange={(e) => {
+            setRefreshTime(e.target.value);
+          }}>
+            <option value={30000}>30s</option>
+            <option value={60000}>1m</option>
+            <option value={300000}>5m</option>
+            <option value={600000}>10m</option>
+          </select>
+
+
         </label>
       </div>
     </div>

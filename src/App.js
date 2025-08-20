@@ -8,7 +8,7 @@ import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
 import { CONFIG_KEYS } from './constants';
 const HORIZON_RESOLUTION = 360; // points
-const TIME_UPDATE_INTERVAL = 1000;
+const DEFAULT_TIME_UPDATE_INTERVAL = 1000;
 function App() {
   // position and time
   const [position, setPosition] = useState(() => {
@@ -18,14 +18,18 @@ function App() {
     return getSetting(CONFIG_KEYS.AUTO_UPDATE) ?? true;
   });
   const [time, setTime] = useState(new Date());
+  const [refreshTime, setRefreshTime] = useState(() => {
+    return getSetting(CONFIG_KEYS.REFRESH_TIME) ?? DEFAULT_TIME_UPDATE_INTERVAL;
+  });
   useEffect(() => {
     const interval = setInterval(() => {
       if (autoUpdate) {
         setTime(new Date());
       }
-    }, TIME_UPDATE_INTERVAL);
+    }, refreshTime);
     return () => clearInterval(interval);
-  }, [autoUpdate]);
+  }, [autoUpdate, refreshTime]);
+  // horizon activation an height
   const [activeHorizon, setActiveHorizon] = useState(() => {
     return getSetting(CONFIG_KEYS.ACTIVE_HORIZON) || false;
   });
@@ -34,28 +38,39 @@ function App() {
     const savedHeight = getSetting(CONFIG_KEYS.HORIZON_HEIGHT);
     return savedHeight !== null ? savedHeight : 0; // default to 0 degrees
   }); // in degrees
+
+  // asteroids
   const [asteroids, setAsteroids] = useState();
+  const [showAsteroids, setShowAsteroids] = useState(() => {
+    return getSetting(CONFIG_KEYS.SHOW_ASTEROIDS) ?? true
+    });
   const [refreshAsteroids, setRefreshAsteroids] = useState(false);
   const [selectedAsteroids, setSelectedAsteroids] = useState(new Set());
+  const [filter, setFilter] = useState({});
+
+  // load asteroids
   useEffect(() => {
     fetchAsteroids().then(data => {
       setAsteroids(data);
     });
   }, [refreshAsteroids]);
 
+  // set horizon data for position and time
   useEffect(() => {
     if (position) {
       const data = getVirtualHorizonByAltitude(position.latitude, position.longitude, time, horizonHeight, HORIZON_RESOLUTION);
       setHorizonData(data);
     }
   }, [time, activeHorizon, position, horizonHeight]);
+
+  //
   const data = useMemo(() => {
     return [
       ...(horizonData && activeHorizon ? [{
         geoJSON: horizonData,
         category: "horizon"
       }] : []),
-      ...(asteroids ? [{
+      ...(asteroids && showAsteroids ? [{
         geoJSON: asteroids,
         category: "asteroids"
       }] : []),
@@ -67,7 +82,7 @@ function App() {
         category: "selected"
       }] : []),
     ];
-  }, [activeHorizon, horizonData, asteroids, selectedAsteroids]);
+  }, [activeHorizon, horizonData, asteroids, selectedAsteroids, showAsteroids, filter]);
 
   const configOverrides = useMemo(() => {
     return {
@@ -80,20 +95,20 @@ function App() {
       saveSetting(CONFIG_KEYS.SAVED_POSITION, position);
     }
     if (activeHorizon) {
-      localStorage.setItem(CONFIG_KEYS.ACTIVE_HORIZON, JSON.stringify(activeHorizon));
+      saveSetting(CONFIG_KEYS.ACTIVE_HORIZON, activeHorizon);
     }
     if (horizonHeight !== null) {
       saveSetting(CONFIG_KEYS.HORIZON_HEIGHT, horizonHeight);
     }
+    saveSetting(CONFIG_KEYS.AUTO_UPDATE, autoUpdate);
+    saveSetting(CONFIG_KEYS.REFRESH_TIME, refreshTime);
+    saveSetting(CONFIG_KEYS.SHOW_ASTEROIDS, showAsteroids);
 
   };
   return (
     <div className="App">
       <header className="App-header">
         <h1>NEO Finder</h1>
-        <div class="controls">
-          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
-        </div>
         <div className="position-controls">
           <MyPosition
           position={position}
@@ -108,6 +123,10 @@ function App() {
           setTime={setTime}
           autoUpdate={autoUpdate}
           setAutoUpdate={setAutoUpdate}
+          refreshTime={refreshTime}
+          setRefreshTime={setRefreshTime}
+          showAsteroids={showAsteroids}
+          setShowAsteroids={setShowAsteroids}
         /></div>
 
 
@@ -123,6 +142,8 @@ function App() {
           setRefreshAsteroids={setRefreshAsteroids}
           selectedAsteroids={selectedAsteroids}
           setSelectedAsteroids={setSelectedAsteroids}
+          filter={filter}
+          setFilter={setFilter}
 
         />
     </div>

@@ -53,9 +53,17 @@ const neocpToGeoJSON = (json) => {
     };
   });
 };
+// const NEOCP_URL='https://www.minorplanetcenter.net/Extended_Files/neocp.json';
+const REAL_SERVICES = {
+    NEOCP_URL: "https://www.minorplanetcenter.net/Extended_Files/neocp.json",
+    OBS_URL: "https://data.minorplanetcenter.net/api/get-obs-neocp"
+}
+
+const API = REAL_SERVICES;
+
 
 export const fetchAsteroids = () => {
-  return fetch('https://www.minorplanetcenter.net/Extended_Files/neocp.json')
+  return fetch(API.NEOCP_URL)
     .then(response => response.json())
     .then(data => {
       return {"type": "FeatureCollection", features: neocpToGeoJSON(data)};

@@ -57,41 +57,9 @@ const DEFAULT_STYLES = {
 
 };
 
-/**
- * Uses https://github.com/ofrohn/d3-celestial to display a sky map.
- * @param {*} geopos [lat, lon] in decimal degrees
- * @param {*} date in ISO format, e.g. "2021-09-25T04:00:00+0000"
- * @param {*} configOverrides Overrides for config, see d3-celestial config. Can include form... other overrides later
- * @param {*} styles styles for lines and text, see DEFAULT_STYLES.
- * @param {*} data array of objects with geoJSON, category, lineStyle, textStyle.
- * - geoJSON: a GeoJSON object or URL to a GeoJSON file
- * - category: a string to categorize the data, used for styling.
- * - lineStyle: an object with CSS properties for the lines, e.g. { stroke: "#f00", width: 2 }
- * - textStyle: an object with CSS properties for the text, e.g. { fill: "#f00", font: "12px Arial" }
- * @param {*} width the width of the map container
- * @returns
- */
-function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+0000", configOverrides = {}, data=[], width = 400, styles = DEFAULT_STYLES}) {
-  const { lineStyles = styles.lineStyles, textStyles = styles.textStyles } = styles;
-  const containerRef = useRef(null);
-  const [showForm, setShowForm] = useState(false);
-  // const dimensions = useResizeObserver(containerRef);
-  const config = useMemo(() => ({
-        ...DEFAULT_CONFIG,
-        container: "map",
-        width,
-        ...(configOverrides || {}),
-
-    }), [configOverrides, width]);
-  // manage redraw on date change or config change
-  useEffect(() => {
-      Celestial.display(config);
-      Celestial.skyview({ date, location: geopos});
-    }, [config, geopos, date, data]);
-
-  // manage data display
-  useEffect(() => {
+const updateData = (data, styles, config, Celestial) => {
       Celestial.clear();
+      const { lineStyles = styles.lineStyles, textStyles = styles.textStyles } = styles;
       data.forEach(({geoJSON, category="default", lineStyle, textStyle}) => {
         Celestial.add({
           type: 'line',
@@ -134,13 +102,51 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
             });
 }});
       });
-    }, [data]);
+    }
+
+/**
+ * Uses https://github.com/ofrohn/d3-celestial to display a sky map.
+ * @param {*} geopos [lat, lon] in decimal degrees
+ * @param {*} date in ISO format, e.g. "2021-09-25T04:00:00+0000"
+ * @param {*} configOverrides Overrides for config, see d3-celestial config. Can include form... other overrides later
+ * @param {*} styles styles for lines and text, see DEFAULT_STYLES.
+ * @param {*} data array of objects with geoJSON, category, lineStyle, textStyle.
+ * - geoJSON: a GeoJSON object or URL to a GeoJSON file
+ * - category: a string to categorize the data, used for styling.
+ * - lineStyle: an object with CSS properties for the lines, e.g. { stroke: "#f00", width: 2 }
+ * - textStyle: an object with CSS properties for the text, e.g. { fill: "#f00", font: "12px Arial" }
+ * @param {*} width the width of the map container
+ * @returns
+ */
+function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+0000", configOverrides = {}, data=[], width = 400, styles = DEFAULT_STYLES}) {
+  const Celestial = window.Celestial;
+  const containerRef = useRef(null);
+  const [showForm, setShowForm] = useState(false);
+  // const dimensions = useResizeObserver(containerRef);
+  const config = useMemo(() => ({
+        ...DEFAULT_CONFIG,
+        container: "map",
+        width,
+        ...(configOverrides || {}),
+
+    }), [configOverrides, width]);
+  // manage redraw on date change or config change
+
+
+  // manage data display
+  useEffect(() => {
+    const op = setTimeout(() => {
+      updateData(data, styles, config, Celestial);
+      Celestial.display(config);
+      Celestial.skyview({ date, location: geopos});
+    }, 400);
+    return () => clearTimeout(op);
+  }, [geopos, data, date, styles, config, Celestial]);
 
   if( !window.Celestial ) {
     return <div>Loading...</div>;
   }
 
-  const Celestial = window.Celestial;
   return (<>
       <div id="map-section" className={showForm ? 'show-form' : ''}>
         <div

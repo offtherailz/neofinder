@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, SelectColumn } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
+import { applyAsteroidsFilter } from '../utils';
+import { FaFilter } from 'react-icons/fa';
 
 export function NeocpAsteroidsTable({
     asteroids,
     selectedAsteroids = [],
     setSelectedAsteroids,
+    refreshAsteroids,
+    setRefreshAsteroids = () => {},
+    filter = {},
+    horizonData = {},
+    setFilter = () => {},
 }) {
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -28,11 +35,11 @@ export function NeocpAsteroidsTable({
       }));
 
       // Build rows array
-      const rowsArr = features.map(f => f.properties);
+      const rowsArr = applyAsteroidsFilter(features, filter).map(f => f.properties);
 
       setColumns([SelectColumn, ...cols]);
       setRows(rowsArr);
-      }, [asteroids]);
+      }, [asteroids, filter]);
 
   // Sorting logic
   function getSortedRows(rows, sortColumns) {
@@ -63,6 +70,7 @@ export function NeocpAsteroidsTable({
         selectedRows={selectedAsteroids}
         onSelectedRowsChange={setSelectedAsteroids}
       />
+    <div>
     <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
         {selectedAsteroids.length > 0 && (
             `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
@@ -70,6 +78,19 @@ export function NeocpAsteroidsTable({
         {asteroids && asteroids.features.length > 0 && (
             `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} found.`
         )}
+    </div>
+    <div>
+      <div class="controls">
+          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
+          <button onClick={() => setFilter({})}>Reset Filter</button>
+          <button className={filter?.horizon ? "button-active" : ""} onClick={() => setFilter({
+            ...filter,
+            horizon: !filter.horizon
+          })}>
+            <FaFilter /> Filter by Horizon
+          </button>
+        </div>
+    </div>
     </div>
     </div>)
 }

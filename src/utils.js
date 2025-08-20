@@ -1,5 +1,8 @@
-  export const deg2rad = d => d * Math.PI / 180;
-  export const rad2deg = r => r * 180 / Math.PI;
+import booleanPointInPolygon from '@turf/booleanPointInPolygon';
+import lineString from '@turf/lineString';
+
+export const deg2rad = d => d * Math.PI / 180;
+export const rad2deg = r => r * 180 / Math.PI;
 
 
 
@@ -180,4 +183,10 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
       }
     }]
   };
+}
+
+export function applyAsteroidsFilter(features, filter, horizonData) {
+  return features.filter(f => {
+    return true;
+  });
 }
