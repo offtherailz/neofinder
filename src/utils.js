@@ -1,6 +1,3 @@
-import booleanPointInPolygon from '@turf/booleanPointInPolygon';
-import lineString from '@turf/lineString';
-
 export const deg2rad = d => d * Math.PI / 180;
 export const rad2deg = r => r * 180 / Math.PI;
 
