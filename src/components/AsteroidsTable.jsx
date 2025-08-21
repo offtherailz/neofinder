@@ -3,7 +3,8 @@ import { DataGrid, SelectColumn } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { applyAsteroidsFilter } from '../utils';
 import { FaFilter } from 'react-icons/fa';
-import { feature } from 'turf';
+import { GiAsteroid } from 'react-icons/gi';
+import { fetchEphemerides } from '../api/neocp';
 
 export function NeocpAsteroidsTable({
     filteredAsteroids,
@@ -34,12 +35,28 @@ export function NeocpAsteroidsTable({
         name: key,
         sortable: true,
         resizable: true,
-      }));
+      })).map((col) => ({
+              ...col,
+              // if Temp_Design, frozen
+              frozen: col.key === "Temp_Desig",
+       }));
 
       // Build rows array
       const rowsArr = applyAsteroidsFilter(features, filter).map(f => f.properties);
-
-      setColumns([SelectColumn, ...cols]);
+      const buttonsColumn = {
+        key: 'actions',
+        name: 'Actions',
+        renderCell: ({ row }) => (
+          <button onClick={(evt, data) => {
+              alert(`Fetching ephemerides for ${row.Temp_Desig}`);
+              fetchEphemerides({ obj: row.Temp_Desig })
+            }}>
+            <GiAsteroid title="Get ephemerides" />
+          </button>
+        ),
+        width: 100,
+      };
+      setColumns([SelectColumn, buttonsColumn, ...cols]);
       setRows(rowsArr);
       }, [filteredAsteroids?.features, filter]);
 
@@ -64,6 +81,7 @@ export function NeocpAsteroidsTable({
     }
   return (<div id="NeocpAsteroidsTable" style={{ height: 600, width: '100%' }}>
       <DataGrid
+        className="rdg-light"
         rowKeyGetter={rowKeyGetter}
         columns={columns}
         rows={getSortedRows(rows, sortColumns)}
@@ -87,7 +105,7 @@ export function NeocpAsteroidsTable({
         )}
     </div>
     <div>
-      <div class="controls">
+      <div className="controls">
           <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
           <button onClick={() => setFilter({})}>Reset Filter</button>
           <button className={filter?.horizon ? "button-active" : ""} onClick={() => setFilter({

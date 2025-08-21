@@ -1,8 +1,7 @@
 import { useState } from "react";
 
 export default function UtcDatetimeInput({value, onChange}) {
-  // Partiamo da una data UTC di esempio
-  const [utcDate, setUtcDate] = useState(new Date(value));
+
 
 
   // Utility per padding
@@ -31,10 +30,12 @@ export default function UtcDatetimeInput({value, onChange}) {
   return (
         <input
           type="datetime-local"
-          value={toUtcInputValue(utcDate)}
+          value={toUtcInputValue(value)}
           onChange={(e) => {
             const d = fromUtcInputValue(e.target.value);
-            if (d) setUtcDate(d);
+            if (d) {
+              onChange(d);
+            }
           }}
         />
 

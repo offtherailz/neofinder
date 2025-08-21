@@ -1,49 +1,46 @@
-import { applyAsteroidsFilter } from "./utils";
-test('renders learn react link', () => {
-    const asteroids = {
-        type: "FeatureCollection",
-        features: [
-        {
-            type: "Feature",
-            properties: {
-            name: "Asteroid 1",
-            size: 100,
-            hazard: false,
-            },
-            geometry: {
-                type: "Point",
-                coordinates: [1, 2]
-            }
-        },
-        {
-            type: "Feature",
-            properties: {
-            name: "Asteroid 2",
-            size: 200,
-            hazard: true,
-            },
-            geometry: {
-                type: "Point",
-                coordinates: [3, 4]
-            }
-        },
-        ],
-    };
 
-    const filter = { horizon: true };
-    const filterData = {
-        horizonData: {
-            type: "FeatureCollection",
-            features: []
-        },
-        position: { latitude: 0, longitude: 0 },
-        time: new Date(),
-        activeHorizon: true,
-        horizonHeight: 0
-    };
-    const filtered = applyAsteroidsFilter(asteroids, filter, filterData);
 
-    expect(filtered.length).toBe(1);
-    expect(filtered[0].properties.name).toBe("Asteroid 2");
+import { parseEphemeridesHtml } from "./utils";
 
+const sampleHtml = `
+<b>P22dhI4</b>
+<pre>
+Date       UT   *  R.A. (J2000) Decl.  Elong.  V        Motion      Uncertainty
+            h                                        "/min   P.A.
+2025 08 21 14     01 12 03.3 -09 33 24 133.4  22.1    1.01  107.1   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.08333&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.08333&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 15     01 12 07.3 -09 33 42 133.4  22.1    1.01  107.2   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.12500&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.12500&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 16     01 12 11.2 -09 34 00 133.4  22.1    1.01  107.2   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.16667&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.16667&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 17     01 12 15.1 -09 34 18 133.5  22.1    1.01  107.3   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.20833&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.20833&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 18     01 12 19.0 -09 34 36 133.5  22.1    1.01  107.3   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.25000&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.25000&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 19     01 12 22.9 -09 34 54 133.5  22.1    1.01  107.3   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.29167&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.29167&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 20     01 12 26.8 -09 35 12 133.5  22.1    1.00  107.4   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.33333&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.33333&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 21     01 12 30.7 -09 35 30 133.5  22.1    1.00  107.4   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.37500&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.37500&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 22     01 12 34.5 -09 35 48 133.6  22.1    1.00  107.4   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.41667&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.41667&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 21 23     01 12 38.4 -09 36 06 133.6  22.1    1.00  107.5   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.45833&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.45833&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 00     01 12 42.3 -09 36 24 133.6  22.1    1.00  107.5   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.50000&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.50000&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 01     01 12 46.2 -09 36 42 133.6  22.1    1.00  107.5   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.54167&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.54167&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 02     01 12 50.0 -09 37 00 133.7  22.1    1.00  107.6   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.58333&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.58333&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 03     01 12 53.9 -09 37 18 133.7  22.1    1.00  107.6   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.62500&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.62500&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 04     01 12 57.7 -09 37 36 133.7  22.1    0.99  107.7   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.66667&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.66667&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 05     01 13 01.6 -09 37 55 133.7  22.1    0.99  107.7   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.70833&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.70833&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 06     01 13 05.4 -09 38 13 133.7  22.1    0.99  107.7   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.75000&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.75000&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 07     01 13 09.2 -09 38 31 133.8  22.1    0.99  107.8   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.79167&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.79167&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 08     01 13 13.0 -09 38 49 133.8  22.1    0.99  107.8   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.83333&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.83333&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 09     01 13 16.9 -09 39 07 133.8  22.1    0.99  107.8   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.87500&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.87500&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 10     01 13 20.7 -09 39 25 133.8  22.1    0.99  107.9   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.91667&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.91667&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 11     01 13 24.5 -09 39 43 133.9  22.1    0.99  107.9   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.95833&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460909.95833&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 12     01 13 28.3 -09 40 02 133.9  22.1    0.98  107.9   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.00000&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.00000&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 13     01 13 32.1 -09 40 20 133.9  22.1    0.98  108.0   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.04167&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.04167&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+2025 08 22 14     01 13 35.9 -09 40 38 133.9  22.1    0.98  108.0   <a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.08333&Ext=VAR2&OC=000&META=apm00">Map</a>/<a href="http://cgi.minorplanetcenter.net/cgi-bin/uncertaintymap.cgi?Obj=P22dhI4&JD=2460910.08333&Form=Y&Ext=VAR2&OC=000&META=apm00">Offsets</a>
+</pre>
+`;
+
+test("parseEphemeridesHtml extracts objects and rows", () => {
+  const result = parseEphemeridesHtml(sampleHtml);
+  expect(result.length).toBe(2);
+  expect(result[0].obj).toBe("P22dhI4");
+  expect(result[1].obj).toBe("XA45hXA");
+  expect(result[0].rows.length).toBe(2);
+  expect(result[0].rows[0][0]).toBe("2025 08 21 14");
+  expect(result[1].rows[1][3]).toBe("+13 56 56");
 });

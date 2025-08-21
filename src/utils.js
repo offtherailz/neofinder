@@ -325,3 +325,33 @@ export function skyMapCenter(latDeg, lonDeg, date = new Date()) {
   ];
 }
 
+/**
+ * Extract data from ephemerides HTML response.
+ * @param {string} html - La risposta HTML della query
+ * @returns {Array} Array di oggetti: { obj: string, rows: Array }
+ */
+export function parseEphemeridesHtml(html) {
+  const results = [];
+  // Trova tutti i blocchi <b>ObjName</b> ... <pre>...</pre>
+  const objRegex = /<b>([A-Za-z0-9]+)<\/b>[\s\S]*?<pre>([\s\S]*?)<\/pre>/g;
+  let match;
+  while ((match = objRegex.exec(html)) !== null) {
+    const obj = match[1];
+    const pre = match[2];
+    // Estrai le righe della tabella (ignora header e link)
+    const lines = pre
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
+    // Per ogni riga, estrai i campi principali
+    const rows = lines.map(line => {
+      // Rimuovi eventuali link HTML
+      const cleanLine = line.replace(/<[^>]+>/g, '').trim();
+      // Suddividi per spazi multipli
+      const fields = cleanLine.split(/\s{2,}/);
+      return fields;
+    });
+    results.push({ obj, rows });
+  }
+  return results;
+}

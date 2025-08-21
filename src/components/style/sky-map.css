@@ -4,6 +4,7 @@
   display: none
 }
 .showform #celestial-form {
+  padding-top: 200px;
   display: block;
   position: fixed;
   z-index: 10000;

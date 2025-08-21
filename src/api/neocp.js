@@ -1,5 +1,5 @@
 import axios from "axios";
-import { hour2degree } from "../utils";
+import { hour2degree, parseEphemeridesHtml } from "../utils";
 
 /**
  *
@@ -87,3 +87,31 @@ export const fetchObservations = (trksubs) => {
             console.error(error);
         });
 }
+
+export const fetchEphemerides = async (params) => {
+  const url = "https://cgi.minorplanetcenter.net/cgi-bin/confirmeph2.cgi";
+  // Se params.obj è un array, crea più parametri obj
+  let formBody = Object.entries(params)
+    .filter(([key]) => key !== "obj")
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+
+  if (Array.isArray(params.obj)) {
+    formBody += "&" + params.obj.map(o => `obj=${encodeURIComponent(o)}`).join("&");
+  } else if (params.obj) {
+    formBody += `&obj=${encodeURIComponent(params.obj)}`;
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formBody
+  });
+
+  if (!response.ok) throw new Error("Error in ephemerides request");
+  const eph = parseEphemeridesHtml(response.text());
+  console.log("Ephemerides fetched:", eph);
+  return  eph;
+};

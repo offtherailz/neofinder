@@ -11,7 +11,21 @@ const DEFAULT_CONFIG = {
   projection: "airy",
   background: { fill: "#fff", stroke: "#000", opacity: 1, width: 1 },
   datapath: "https://ofrohn.github.io/data/",
+  daylight: {  //Show day sky as a gradient, if location is set and map projection is hemispheric
+    show: false
+  },
+  planets: {
+    show: true
+  },
+  horizon: {  //Show horizon marker, if location is set and map projection is all-sky
+    show: true,
+    stroke: "#cccccc", // Line
+    width: 1.0,
+    fill: "#000000",   // Area below horizon
+    opacity: 0.5
+  },
   stars: {
+    show:false,
     colors: false,
     names: false,
     style: { fill: "#000", opacity:1 },
