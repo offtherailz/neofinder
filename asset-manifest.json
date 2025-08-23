@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/neofinder/static/css/main.50db4469.css",
-    "main.js": "/neofinder/static/js/main.591a54b6.js",
+    "main.js": "/neofinder/static/js/main.538e2da3.js",
     "static/js/453.9d426a7f.chunk.js": "/neofinder/static/js/453.9d426a7f.chunk.js",
     "index.html": "/neofinder/index.html",
     "main.50db4469.css.map": "/neofinder/static/css/main.50db4469.css.map",
-    "main.591a54b6.js.map": "/neofinder/static/js/main.591a54b6.js.map",
+    "main.538e2da3.js.map": "/neofinder/static/js/main.538e2da3.js.map",
     "453.9d426a7f.chunk.js.map": "/neofinder/static/js/453.9d426a7f.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.50db4469.css",
-    "static/js/main.591a54b6.js"
+    "static/js/main.538e2da3.js"
   ]
 }
