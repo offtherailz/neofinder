@@ -30,7 +30,6 @@ export function NeocpAsteroidsTable({
     name: 'Actions',
     renderCell: ({ row }) => (
       <button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
-          alert(`Fetching ephemerides for ${row.Temp_Desig}`);
           fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig }).then(newEphemerides => {
             setEphemerids({
               ...ephemerids,
@@ -73,11 +72,6 @@ export function NeocpAsteroidsTable({
       sortable: true,
       resizable: true
     },{
-      key: 'observations',
-      name: 'observations',
-      sortable: true,
-      resizable: true
-    },{
       key: 'NObs',
       name: 'NObs',
       sortable: true,
@@ -85,6 +79,11 @@ export function NeocpAsteroidsTable({
     },{
       key: 'Not_Seen_dys',
       name: 'Not seen(days)',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'discovery',
+      name: 'discovery',
       sortable: true,
       resizable: true
     },{
@@ -97,12 +96,27 @@ export function NeocpAsteroidsTable({
 
   function getSpeed(dd = []) {
     return arrayAvg(dd.map(ep => ep?.motion).filter(ep => !!ep))
+  }
+  function getDiscoveryDate(data = {}) {
+      const year = data.Discovery_year;
+      const month = data.Discovery_month - 1; // month in JS: 0 = gennaio
+      const day = Math.floor(data.Discovery_day);
+      const fraction = data.Discovery_day - day;
 
+      // calcolo ore/minuti/secondi dalla parte decimale
+      const hours = Math.floor(fraction * 24); // TODO: UTC
+      // const minutes = Math.floor((fraction * 24 - hours) * 60);
+      // const seconds = Math.floor((((fraction * 24 - hours) * 60) - minutes) * 60);
+      return `${year}-${month}-${day} (~${hours}:00)`
   }
   const rows = applyAsteroidsFilter(features ?? [], filter)
         .map(f => f.properties)
-        .map(p => ({...p,
-          speed: getSpeed(ephemerids?.[p.Temp_Desig]?.ephem)}))
+        .map(p => ({
+          ...p,
+          speed: getSpeed(ephemerids?.[p.Temp_Desig]?.ephem),
+          discovery: getDiscoveryDate(p)
+        }));
+
 
   // Sorting logic
   function getSortedRows(rows, sortColumns) {
