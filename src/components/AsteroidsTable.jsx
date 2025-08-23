@@ -29,9 +29,8 @@ export function NeocpAsteroidsTable({
     key: 'actions',
     name: 'Actions',
     renderCell: ({ row }) => (
-      <button onClick={(evt, data) => {
+      <button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
           alert(`Fetching ephemerides for ${row.Temp_Desig}`);
-
           fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig }).then(newEphemerides => {
             setEphemerids({
               ...ephemerids,
