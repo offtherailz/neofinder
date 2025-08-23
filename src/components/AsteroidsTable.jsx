@@ -83,13 +83,13 @@ export function NeocpAsteroidsTable({
       sortable: true,
       resizable: true
     },{
-      key: 'Temp_Desig',
-      name: 'Temp_Desig',
+      key: 'Not_Seen_dys',
+      name: 'Not seen(days)',
       sortable: true,
       resizable: true
     },{
-      key: 'Temp_Desig',
-      name: 'Temp_Desig',
+      key: 'Updated',
+      name: 'Updated',
       sortable: true,
       resizable: true
     }
