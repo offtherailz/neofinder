@@ -7,7 +7,7 @@ import { FaFilter } from 'react-icons/fa';
 import { GiAsteroid } from 'react-icons/gi';
 import { fetchEphemerides } from '../api/neocp';
 import { DEFAULT_EPHEM_PARAMS } from '../constants';
-const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length) : NaN;
+const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(3) : NaN;
 export function NeocpAsteroidsTable({
     filteredAsteroids,
     asteroids,
