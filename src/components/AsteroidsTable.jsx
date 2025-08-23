@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DataGrid, SelectColumn } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
-import { applyAsteroidsFilter } from '../utils';
+import './style/asteroid-table.css';
+import { applyAsteroidsFilter } from '../utils/utils';
 import { FaFilter } from 'react-icons/fa';
 import { GiAsteroid } from 'react-icons/gi';
 import { fetchEphemerides } from '../api/neocp';
-
+import { DEFAULT_EPHEM_PARAMS } from '../constants';
+const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length) : NaN;
 export function NeocpAsteroidsTable({
     filteredAsteroids,
     asteroids,
@@ -15,50 +17,93 @@ export function NeocpAsteroidsTable({
     setRefreshAsteroids = () => {},
     filter = {},
     horizonData = {},
+    ephemerids = {},
+    setEphemerids = () => {},
     setFilter = () => {},
 }) {
-  const [rows, setRows] = useState([]);
-  const [columns, setColumns] = useState([]);
   const [sortColumns, setSortColumns] = useState([]);
+  const [ephemParams, setEphemParam] = useState(DEFAULT_EPHEM_PARAMS); // TODO: set form data
+  const features = filteredAsteroids?.features || [];
 
-  useEffect(() => {
-      // Each feature has a 'properties' object
-      const features = filteredAsteroids?.features || [];
-      if (features.length === 0) return;
+  const buttonsColumn = useMemo(() => ({
+    key: 'actions',
+    name: 'Actions',
+    renderCell: ({ row }) => (
+      <button onClick={(evt, data) => {
+          alert(`Fetching ephemerides for ${row.Temp_Desig}`);
 
-      // Get all property keys from the first feature
-      const propertyKeys = Object.keys(features[0].properties);
+          fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig }).then(newEphemerides => {
+            setEphemerids({
+              ...ephemerids,
+              ...newEphemerides
+            })
+          })
+        }}>
+        <GiAsteroid title="Get ephemerides" />
+      </button>
+    ),
+    width: 100,
+  }), [ephemParams, ephemerids, setEphemerids]);
 
-      // Build columns config
-      const cols = propertyKeys.filter(k => k !== "itemData").map(key => ({
-        key,
-        name: key,
-        sortable: true,
-        resizable: true,
-      })).map((col) => ({
-              ...col,
-              // if Temp_Design, frozen
-              frozen: col.key === "Temp_Desig",
-       }));
+  const columns = [
+    SelectColumn,
+    buttonsColumn,
+    {
+      key: 'Temp_Desig',
+      name: 'Temp_Desig',
+      sortable: true,
+      resizable: true
+    }, {
+      key: 'Score',
+      name: 'Score',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'R.A.',
+      name: 'R.A.',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'Decl.',
+      name: 'Decl.',
+      sortable: true,
+      resizable: true
+    }, {
+      key: 'speed',
+      name: 'avg. speed',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'observations',
+      name: 'observations',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'NObs',
+      name: 'NObs',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'Temp_Desig',
+      name: 'Temp_Desig',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'Temp_Desig',
+      name: 'Temp_Desig',
+      sortable: true,
+      resizable: true
+    }
+  ]
 
-      // Build rows array
-      const rowsArr = applyAsteroidsFilter(features, filter).map(f => f.properties);
-      const buttonsColumn = {
-        key: 'actions',
-        name: 'Actions',
-        renderCell: ({ row }) => (
-          <button onClick={(evt, data) => {
-              alert(`Fetching ephemerides for ${row.Temp_Desig}`);
-              fetchEphemerides({ obj: row.Temp_Desig })
-            }}>
-            <GiAsteroid title="Get ephemerides" />
-          </button>
-        ),
-        width: 100,
-      };
-      setColumns([SelectColumn, buttonsColumn, ...cols]);
-      setRows(rowsArr);
-      }, [filteredAsteroids?.features, filter]);
+  function getSpeed(dd = []) {
+    return arrayAvg(dd.map(ep => ep?.motion).filter(ep => !!ep))
+
+  }
+  const rows = applyAsteroidsFilter(features ?? [], filter)
+        .map(f => f.properties)
+        .map(p => ({...p,
+          speed: getSpeed(ephemerids?.[p.Temp_Desig]?.ephem)}))
 
   // Sorting logic
   function getSortedRows(rows, sortColumns) {

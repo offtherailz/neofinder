@@ -1,5 +1,6 @@
 import axios from "axios";
-import { hour2degree, parseEphemeridesHtml } from "../utils";
+import { hour2degree, parseEphemeridesHtml } from "../utils/utils";
+import { parseObsCodes } from "../utils/observatories";
 
 /**
  *
@@ -58,7 +59,8 @@ const neocpToGeoJSON = (json) => {
 // const NEOCP_URL='https://www.minorplanetcenter.net/Extended_Files/neocp.json';
 const REAL_SERVICES = {
     NEOCP_URL: "https://www.minorplanetcenter.net/Extended_Files/neocp.json",
-    OBS_URL: "https://data.minorplanetcenter.net/api/get-obs-neocp"
+    OBS_URL: "https://data.minorplanetcenter.net/api/get-obs-neocp",
+    OBS_CODES_URL: "https://minorplanetcenter.net/iau/lists/ObsCodes.html"
 }
 
 const API = REAL_SERVICES;
@@ -111,7 +113,11 @@ export const fetchEphemerides = async (params) => {
   });
 
   if (!response.ok) throw new Error("Error in ephemerides request");
-  const eph = parseEphemeridesHtml(response.text());
+  const eph = parseEphemeridesHtml(await response.text());
   console.log("Ephemerides fetched:", eph);
   return  eph;
 };
+
+const fetchObservatories = () => {
+  fetch(API.OBS_CODES_URL)
+}

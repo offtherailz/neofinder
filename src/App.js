@@ -2,13 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import SkyMap from './components/SkyMap';
 import MyPosition from './components/MyPosition';
-import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter, zenithRADec } from './utils';
+import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter } from './utils/utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
 import { CONFIG_KEYS } from './constants';
 const HORIZON_RESOLUTION = 360; // points
-const DEFAULT_TIME_UPDATE_INTERVAL = 1000;
+const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
 function App() {
   // position and time
   const [position, setPosition] = useState(() => {
@@ -49,6 +49,8 @@ function App() {
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
+  const [ephemerids, setEphemerids] = useState({});
+
 
   // load asteroids
   useEffect(() => {
@@ -159,6 +161,8 @@ function App() {
         configOverrides={configOverrides} />
       </div>
       <NeocpAsteroidsTable
+          ephemerids={ephemerids}
+          setEphemerids={setEphemerids}
           filterData={filterData}
           asteroids={asteroids}
           filteredAsteroids={filteredAsteroids}

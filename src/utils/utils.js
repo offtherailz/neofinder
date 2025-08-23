@@ -325,13 +325,41 @@ export function skyMapCenter(latDeg, lonDeg, date = new Date()) {
   ];
 }
 
+function parseTableLine(line) {
+  line = line.trim();
+  if (!line || line.startsWith("Date") || line.startsWith("h")) {
+    return null; // ignora header o righe vuote
+  }
+
+  // split su 2 o più spazi
+  const parts = line.split(/\s{1,}/);
+
+  // Date + ora UT
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // JS usa 0-based
+  const day = parseInt(parts[2], 10);
+  const hour = parseFloat(parts[3]); // può essere con decimali tipo 14.5
+
+  const dateUtc = new Date(Date.UTC(year, month, day, Math.floor(hour), (hour % 1) * 60));
+
+  return {
+    date: dateUtc,          // YYYY MM
+    ra: `${parts[4]} ${parts[5]} ${parts[6]}`,    // "22 41 32.2"
+    dec: `${parts[7]} ${parts[8]} ${parts[9]}`,   // "+01 51 58"
+    elong: parseFloat(parts[10]),     // es. 164.6
+    v: parseFloat(parts[11]),         // es. 22.6
+    motion: parseFloat(parts[12]),    // velocità
+    pa: parseFloat(parts[13])         // angolo di posizione
+  };
+}
+
 /**
  * Extract data from ephemerides HTML response.
  * @param {string} html - La risposta HTML della query
- * @returns {Array} Array di oggetti: { obj: string, rows: Array }
+ * @returns {Object} Array di oggetti: "OBJ_TEMP_ASSIGN" rows: Array }
  */
 export function parseEphemeridesHtml(html) {
-  const results = [];
+  const results = {};
   // Trova tutti i blocchi <b>ObjName</b> ... <pre>...</pre>
   const objRegex = /<b>([A-Za-z0-9]+)<\/b>[\s\S]*?<pre>([\s\S]*?)<\/pre>/g;
   let match;
@@ -343,15 +371,16 @@ export function parseEphemeridesHtml(html) {
       .split('\n')
       .map(l => l.trim())
       .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
+
     // Per ogni riga, estrai i campi principali
-    const rows = lines.map(line => {
+    const ephem = lines.map(line => {
       // Rimuovi eventuali link HTML
       const cleanLine = line.replace(/<[^>]+>/g, '').trim();
-      // Suddividi per spazi multipli
-      const fields = cleanLine.split(/\s{2,}/);
-      return fields;
+
+      return parseTableLine(line)
     });
-    results.push({ obj, rows });
+
+    results[obj] = { ephem };
   }
   return results;
 }

@@ -7,7 +7,7 @@ window.Celestial = Celestial;
 
 const DEFAULT_CONFIG = {
   container: "map",
-  form: true,
+  form: false,
   projection: "airy",
   background: { fill: "#fff", stroke: "#000", opacity: 1, width: 1 },
   datapath: "https://ofrohn.github.io/data/",

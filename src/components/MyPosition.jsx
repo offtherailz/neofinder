@@ -13,6 +13,8 @@ const MyPosition = ({
   saveSettings,
   horizonHeight,
   setHorizonHeight,
+  selectedObs,
+  setSelectedObs,
   time,
   setTime,
   autoUpdate,
@@ -46,6 +48,23 @@ const MyPosition = ({
       }
     );
   };
+  // useEffect(() => {
+  //   // Recupera la lista degli osservatori all'avvio
+  //   fetchObservatories()
+  //     .then(res => res.text())
+  //     .then(html => setObservatories(parseObsCodes(html)))
+  //     .catch(() => setObservatories([]));
+  // }, []);
+  // useEffect(() => {
+  //   // Se selezionato un osservatorio, aggiorna coordinate e altitudine
+  //   if (selectedObs) {
+  //     const obs = observatories.find(o => o.code === selectedObs);
+  //     if (obs) {
+  //       setPosition({ latitude: obs.latitude, longitude: obs.longitude });
+  //       setHorizonHeight(obs.altitude);
+  //     }
+  //   }
+  // }, [selectedObs, observatories, setPosition, setHorizonHeight]);
   // div
   return (
     <div className="position-viewer">

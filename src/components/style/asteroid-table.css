@@ -1,0 +1,5 @@
+
+/* fix to force column to work */
+.rdg-cell.rdg-cell-resizable {
+  display: block !important;
+}
