@@ -408,12 +408,12 @@ export function parseEphemeridesHtml(html) {
       .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
 
     const ephem = lines
-      .filter(line => !(line?.indexOf("<suppressed>") > 0))
+      .filter(line => !(line?.indexOf("suppressed") > 0))
       .map(line => {
       return parseEphemLine(line)
     });
 
-    results[obj] = { ephem, suppressed: html.indexOf("<suppressed>") > 0 };
+    results[obj] = { ephem, suppressed: html.indexOf("suppressed") > 0 };
   }
   return results;
 }
