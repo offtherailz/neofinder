@@ -408,7 +408,7 @@ export function parseEphemeridesHtml(html) {
       .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
 
     const ephem = lines
-      .filter(line => !line?.indexOf("<suppressed>") > 0)
+      .filter(line => !(line?.indexOf("<suppressed>") > 0))
       .map(line => {
       return parseEphemLine(line)
     });
