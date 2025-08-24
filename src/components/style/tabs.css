@@ -1,0 +1,42 @@
+/* Container */
+.tabs-container {
+  font-family: sans-serif;
+  width: 100%;
+
+  margin: 10px auto;
+}
+
+/* Tab buttons */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: #f9f9f9;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.tabs button:hover {
+  background: #eee;
+}
+
+.tabs button.active {
+  border-bottom: 2px solid #007bff;
+  background: #fff;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Tab content */
+.tab-content {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+}

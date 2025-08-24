@@ -6,6 +6,7 @@ export const CONFIG_KEYS = {
     REFRESH_TIME: 'refreshTime',
     SHOW_ASTEROIDS: 'showAsteroids',
     FILTER: 'filter',
+    EPHEM_PARAMS: 'ephemParams'
 };
 
 export const DEFAULT_EPHEM_PARAMS = {
@@ -22,7 +23,7 @@ export const DEFAULT_EPHEM_PARAMS = {
     long: "",
     lat: "",
     alt: "",
-    int: 0,
+    int: 2,
     start: 0,
     raty: "a",
     mot: "m",

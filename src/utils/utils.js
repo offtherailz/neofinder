@@ -139,7 +139,7 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
   const lon = deg2rad(longitude);
   const alt = deg2rad(horizonAlt);
 
-  // Calcolo del Tempo Siderale Locale (LST)
+  // Sideral local time calculation (LST) - copied
   const J2000 = new Date('2000-01-01T12:00:00Z');
   const jd = (date.getTime() - J2000.getTime()) / 86400000 + 2451545.0;
   const T = (jd - 2451545.0) / 36525;
@@ -148,20 +148,20 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
 
   const coordinates = [];
   for (let i = 0; i <= steps; i++) {
-    const az = deg2rad(i); // Azimut in radianti [0, 2π)
+    const az = deg2rad(i); // Azimut in rad [0, 2π)
 
-    // Calcolo della Declinazione (dec) a partire da altezza e azimut
+    // Dec calculation from height and azimut
     const sinDec = Math.sin(lat) * Math.sin(alt) + Math.cos(lat) * Math.cos(alt) * Math.cos(az);
     const dec = Math.asin(sinDec);
 
-    // Calcolo dell'Angolo Orario (H)
+    // hour angle
     const cosH = (Math.sin(alt) - Math.sin(lat) * sinDec) / (Math.cos(lat) * Math.cos(dec));
     const H = Math.atan2(-Math.sin(az) * Math.cos(alt), cosH);
 
-    // Calcolo dell'Ascensione Retta (RA)
+    // RA calculation
     const ra = (lst - H) % (2 * Math.PI);
 
-    // Conversione e aggiunta delle coordinate
+    // Conversion in degrees
     const newLon = rad2deg(ra); // RA è la Longitudine nel sistema equatoriale
     const newLat = rad2deg(dec); // Dec è la Latitudine nel sistema equatoriale
     coordinates.push([newLon.toFixed(4), newLat.toFixed(4)]);
@@ -269,7 +269,20 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
         horizonHeight
       )
     }
+
   }
+  let notSeenMax;
+    try{
+      notSeenMax = parseFloat(filter?.notSeenMax)
+    } catch(e) {
+      console.log(e);
+    }
+
+    if(notSeenMax) {
+      features = features.filter(({properties}) => {
+        return properties.Not_Seen_dys <= notSeenMax;
+      })
+    }
   return {
     ...asteroids,
     features
@@ -285,14 +298,13 @@ export function zenithRADec(latDeg, lonDeg, date = new Date()) {
   const JD = date.getTime() / 86400000 + 2440587.5;
   const D  = JD - 2451545.0;
 
-  // GMST in gradi (formula compatta, sufficiente per mappe)
+  // GMST in deg (Compact formula)
   let GMST = 280.46061837 + 360.98564736629 * D;
   GMST = norm360(GMST);
 
-  // Longitudine EST positiva
+  //  EAST positive lng
   const LSTdeg = norm360(GMST + lonDeg);
 
-  // RA dello zenit in gradi (converti in ore se vuoi: /15)
   const RA_zen_deg  = LSTdeg;
   const Dec_zen_deg = latDeg;
 
@@ -303,6 +315,14 @@ export function zenithRADec(latDeg, lonDeg, date = new Date()) {
   };
 }
 
+/**
+ * Returns the center of the map given your latitude, longitude and date.
+ * This will put the azimuth at the center of the map.
+ * @param {number} latDeg latitude
+ * @param {number} lonDeg longitude
+ * @param {Date} date the date
+ * @returns {number[]}
+ */
 export function skyMapCenter(latDeg, lonDeg, date = new Date()) {
 
   const norm360 = d => ((d % 360) + 360) % 360;
@@ -319,13 +339,25 @@ export function skyMapCenter(latDeg, lonDeg, date = new Date()) {
   const LSTdeg = norm360(GMST + lonDeg);
 
   return [
-    LSTdeg,   // longitude = RA (gradi)
+    LSTdeg,   // longitude = RA (deg)
     latDeg,   // latitude  = Dec
-    0         // orientation (0 = Nord in alto)
+    0
   ];
 }
 
-function parseTableLine(line) {
+/**
+ *
+ * @param {string} line the line of text to parse
+ * @returns {obj} and object structured like this:
+ * date: dateUtc,
+ * ra: "22 41 32.2"
+ * dec: "+01 51 58"
+ * elong: 164.6
+ * v:  22.6
+ * motion:   speed arcsecs/min // TODO: see also 2 directions.
+ * pa:        // Position Angle, deg
+ */
+export function parseEphemLine(line) {
   line = line.trim();
   if (!line || line.startsWith("Date") || line.startsWith("h")) {
     return null; // ignora header o righe vuote
@@ -335,12 +367,15 @@ function parseTableLine(line) {
   const parts = line.split(/\s{1,}/);
 
   // Date + ora UT
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // JS usa 0-based
-  const day = parseInt(parts[2], 10);
-  const hour = parseFloat(parts[3]); // può essere con decimali tipo 14.5
-
-  const dateUtc = new Date(Date.UTC(year, month, day, Math.floor(hour), (hour % 1) * 60));
+  const year = parts[0];
+  const month = parts[1]; // JS usa 0-based
+  const day = parts[2]; //
+  const [hour, min] = parts[3].length === 2 // can be 01 or 0130
+    ? [parts[3], "00"]
+    : [parts[3].substring(0,2), parts[3].substring(2,4)]
+  // 2025-09-06T09:10:00Z
+  const dateString = `${year}-${month}-${day}T${hour}:${min}:00Z`;
+  const dateUtc = new Date(dateString);
 
   return {
     date: dateUtc,          // YYYY MM
@@ -348,15 +383,15 @@ function parseTableLine(line) {
     dec: `${parts[7]} ${parts[8]} ${parts[9]}`,   // "+01 51 58"
     elong: parseFloat(parts[10]),     // es. 164.6
     v: parseFloat(parts[11]),         // es. 22.6
-    motion: parseFloat(parts[12]),    // velocità
-    pa: parseFloat(parts[13])         // angolo di posizione
+    motion: parseFloat(parts[12]),    // speed arcsecs/min
+    pa: parseFloat(parts[13])         // Position Angle, deg
   };
 }
 
 /**
  * Extract data from ephemerides HTML response.
- * @param {string} html - La risposta HTML della query
- * @returns {Object} Array di oggetti: "OBJ_TEMP_ASSIGN" rows: Array }
+ * @param {string} html - Html to parse
+ * @returns {Object} an object that contains a key for each data collected.
  */
 export function parseEphemeridesHtml(html) {
   const results = {};
@@ -372,15 +407,13 @@ export function parseEphemeridesHtml(html) {
       .map(l => l.trim())
       .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
 
-    // Per ogni riga, estrai i campi principali
-    const ephem = lines.map(line => {
-      // Rimuovi eventuali link HTML
-      const cleanLine = line.replace(/<[^>]+>/g, '').trim();
-
-      return parseTableLine(line)
+    const ephem = lines
+      .filter(line => !line?.indexOf("<suppressed>") > 0)
+      .map(line => {
+      return parseEphemLine(line)
     });
 
-    results[obj] = { ephem };
+    results[obj] = { ephem, suppressed: html.indexOf("<suppressed>") > 0 };
   }
   return results;
 }

@@ -1,6 +1,6 @@
 
 
-import { parseEphemeridesHtml } from "./utils/utils";
+import { parseEphemeridesHtml, parseEphemLine } from "./utils/utils";
 
 const sampleHtml = `
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -118,3 +118,26 @@ test("parseEphemeridesHtml extracts objects and rows", () => {
   expect(eph.dec).toBe("+01 51 58");
   expect(eph.motion).toBe(1.35);
 });
+
+test("parseEphemLine", () => {
+  const testData = [{
+    line: "2025 09 06 0910   21 36 02.3 -14 59 10 157.7  19.2   -0.35  -0.15",
+    expected: {
+      date: new Date("2025-09-06T09:10:00Z")
+    }
+  }]
+  testData.forEach(({line, expected}) => {
+    const res = parseEphemLine(line);
+    Object.keys(expected).forEach((k) => {
+      let value = res[k];
+      let expectedValue = expected[k];
+      if(k === "date") {
+        value = value.toUTCString();
+        expectedValue = expectedValue.toUTCString();
+      }
+      expect(value).toEqual(expectedValue);
+    });
+
+  })
+
+})

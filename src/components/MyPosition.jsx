@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaMapMarkerAlt, FaUndo, FaSave, FaPlay, FaPause } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaUndo, FaSave, FaPlay, FaWpforms, FaPause } from 'react-icons/fa';
 import { GiHorizonRoad } from "react-icons/gi";
 import { GiAsteroid } from "react-icons/gi";
 import UTCDateTimePicker from './UTCDateTimePicker';
 import './style/position.css';
+import Modal from './common/Modal';
+import EphemMPCForm from './EphForm';
 const MyPosition = ({
+
   position,
   setPosition,
   setActiveHorizon,
@@ -13,8 +16,8 @@ const MyPosition = ({
   saveSettings,
   horizonHeight,
   setHorizonHeight,
-  selectedObs,
-  setSelectedObs,
+  ephemParams,
+  setEphemParam,
   time,
   setTime,
   autoUpdate,
@@ -26,6 +29,7 @@ const MyPosition = ({
 }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
 
   const getMyPosition = () => {
     if (!navigator.geolocation) {
@@ -48,6 +52,7 @@ const MyPosition = ({
       }
     );
   };
+
   // useEffect(() => {
   //   // Recupera la lista degli osservatori all'avvio
   //   fetchObservatories()
@@ -66,11 +71,16 @@ const MyPosition = ({
   //   }
   // }, [selectedObs, observatories, setPosition, setHorizonHeight]);
   // div
-  return (
+  return (<>
     <div className="position-viewer">
       <div className="position-viewer-header">
         <h2>Position</h2>
         <div className="position-viewer-buttons">
+          <button className={showEphemParamsForm ? "button-active" : ""} title="Show params form"
+        onClick={() => setShowEphemParamsForm(!showEphemParamsForm)}
+        disabled={isLoading}>
+          <FaWpforms />
+        </button>
         <button title={isLoading ? "loading" : "get current position"}
         onClick={getMyPosition}
         disabled={isLoading}>
@@ -150,6 +160,15 @@ const MyPosition = ({
         </label>
       </div>
     </div>
+    {
+      <Modal open={showEphemParamsForm} onClose={() => {setShowEphemParamsForm(false)}}>
+        <EphemMPCForm
+          params={ephemParams}
+          setParams={setEphemParam}
+        />
+      </Modal>
+    }
+    </>
 
   );
 };

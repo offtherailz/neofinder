@@ -7,8 +7,11 @@ import { FaFilter } from 'react-icons/fa';
 import { GiAsteroid } from 'react-icons/gi';
 import { fetchEphemerides } from '../api/neocp';
 import { DEFAULT_EPHEM_PARAMS } from '../constants';
+import AsteroidFilter from './AstFilter';
 const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(3) : NaN;
 export function NeocpAsteroidsTable({
+    ephemParams,
+    setEphemParams,
     filteredAsteroids,
     asteroids,
     selectedAsteroids = [],
@@ -22,7 +25,7 @@ export function NeocpAsteroidsTable({
     setFilter = () => {},
 }) {
   const [sortColumns, setSortColumns] = useState([]);
-  const [ephemParams, setEphemParam] = useState(DEFAULT_EPHEM_PARAMS); // TODO: set form data
+
   const features = filteredAsteroids?.features || [];
 
   const buttonsColumn = useMemo(() => ({
@@ -30,12 +33,13 @@ export function NeocpAsteroidsTable({
     name: 'Actions',
     renderCell: ({ row }) => (
       <button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
-          fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig }).then(newEphemerides => {
-            setEphemerids({
-              ...ephemerids,
-              ...newEphemerides
+          fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig })
+            .then(newEphemerides => {
+              setEphemerids((ee) => ({
+                ...ee,
+                ...newEphemerides
+              }))
             })
-          })
         }}>
         <GiAsteroid title="Get ephemerides" />
       </button>
@@ -151,7 +155,7 @@ export function NeocpAsteroidsTable({
     <div>
     <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
         {
-          filteredAsteroids?.features.length > 0 && (
+          filteredAsteroids?.features && (
              `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
           )
         }
@@ -166,12 +170,12 @@ export function NeocpAsteroidsTable({
       <div className="controls">
           <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
           <button onClick={() => setFilter({})}>Reset Filter</button>
-          <button className={filter?.horizon ? "button-active" : ""} onClick={() => setFilter({
-            ...filter,
-            horizon: !filter.horizon
-          })}>
-            <FaFilter /> Filter by Horizon
-          </button>
+
+          <AsteroidFilter
+            filter={filter}
+            setFilter={setFilter}
+            />
+
         </div>
     </div>
     </div>

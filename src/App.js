@@ -6,7 +6,8 @@ import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter } from 
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
-import { CONFIG_KEYS } from './constants';
+import { CONFIG_KEYS, DEFAULT_EPHEM_PARAMS } from './constants';
+import Details from './components/Details';
 const HORIZON_RESOLUTION = 360; // points
 const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
 function App() {
@@ -21,14 +22,7 @@ function App() {
   const [refreshTime, setRefreshTime] = useState(() => {
     return getSetting(CONFIG_KEYS.REFRESH_TIME) ?? DEFAULT_TIME_UPDATE_INTERVAL;
   });
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (autoUpdate) {
-        setTime(new Date());
-      }
-    }, refreshTime);
-    return () => clearInterval(interval);
-  }, [autoUpdate, refreshTime]);
+
   // horizon activation an height
   const [activeHorizon, setActiveHorizon] = useState(() => {
     return getSetting(CONFIG_KEYS.ACTIVE_HORIZON) || false;
@@ -46,10 +40,23 @@ function App() {
     });
   const [refreshAsteroids, setRefreshAsteroids] = useState(false);
   const [selectedAsteroids, setSelectedAsteroids] = useState(new Set());
+  const [ephemerids, setEphemerids] = useState({});
+  const [ephemParams, setEphemParam] = useState(() => {
+    return getSetting(CONFIG_KEYS.EPHEM_PARAMS) ?? DEFAULT_EPHEM_PARAMS; // TODO: set form data
+  });
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
-  const [ephemerids, setEphemerids] = useState({});
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (autoUpdate) {
+        setTime(new Date());
+        setRefreshAsteroids(!refreshAsteroids);
+      }
+    }, refreshTime);
+    return () => clearInterval(interval);
+  }, [autoUpdate, refreshTime, refreshAsteroids]);
+
 
 
   // load asteroids
@@ -126,6 +133,7 @@ function App() {
     saveSetting(CONFIG_KEYS.REFRESH_TIME, refreshTime);
     saveSetting(CONFIG_KEYS.SHOW_ASTEROIDS, showAsteroids);
     saveSetting(CONFIG_KEYS.FILTER, filter);
+    saveSetting(CONFIG_KEYS.EPHEM_PARAMS, ephemParams);
     console.log("Settings saved");
 
   };
@@ -151,7 +159,10 @@ function App() {
           setRefreshTime={setRefreshTime}
           showAsteroids={showAsteroids}
           setShowAsteroids={setShowAsteroids}
+          ephemParams={ephemParams}
+          setEphemParam={setEphemParam}
         /></div>
+
 
 
       </header>
@@ -159,10 +170,17 @@ function App() {
         <SkyMap data={data}
         // geopos={position ? [position.latitude, position.longitude] : undefined}
         configOverrides={configOverrides} />
+        <Details
+          asteroids={asteroids?.features?.map(({properties}) => properties) }
+          ephemerids={ephemerids}
+          selectedAsteroids={selectedAsteroids}
+        />
       </div>
       <NeocpAsteroidsTable
           ephemerids={ephemerids}
           setEphemerids={setEphemerids}
+          ephemParams={ephemParams}
+          setEphemParam={setEphemParam}
           filterData={filterData}
           asteroids={asteroids}
           filteredAsteroids={filteredAsteroids}
@@ -172,7 +190,6 @@ function App() {
           setSelectedAsteroids={setSelectedAsteroids}
           filter={filter}
           setFilter={setFilter}
-
         />
     </div>
   );
