@@ -1,34 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SelectColumn } from 'react-data-grid';
 import DataGrid from './common/AutoHeightDataGrid';
 import 'react-data-grid/lib/styles.css';
 import './style/asteroid-table.css';
 import { applyAsteroidsFilter } from '../utils/utils';
-import { FaFilter } from 'react-icons/fa';
-import { GiAsteroid, GiMoonOrbit, GiOrbit } from 'react-icons/gi';
+import { GiAsteroid, GiMoonOrbit } from 'react-icons/gi';
 import { fetchEphemerides } from '../api/neocp';
-import { DEFAULT_EPHEM_PARAMS } from '../constants';
 import AsteroidFilter from './AstFilter';
-
-const FilterRenderer = ({ column, onFilterChange }) => {
-  const [filterValue, setFilterValue] = useState('');
-  const handleChange = (e) => {
-    setFilterValue(e.target.value);
-    onFilterChange(e.target.value);
-  };
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <FaFilter style={{ marginRight: '4px' }} />
-      <input
-        type="text"
-        value={filterValue}
-        onChange={handleChange}
-        placeholder={`Filter ${column.name}`}
-        style={{ width: '100%' }}
-      />
-    </div>
-  );
-}
 
 const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(3) : NaN;
 export function NeocpAsteroidsTable({
@@ -41,7 +19,7 @@ export function NeocpAsteroidsTable({
     refreshAsteroids,
     setRefreshAsteroids = () => {},
     filter = {},
-    horizonData = {},
+    loadingAsteroids,
     ephemerids = {},
     openEphemerides = () => {},
     setEphemerids = () => {},
@@ -80,16 +58,6 @@ export function NeocpAsteroidsTable({
     {
       key: 'Temp_Desig',
       name: 'Temp_Desig',
-      renderHeaderCell: (p) => (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span>{p.column.name}</span>
-          <FilterRenderer
-            onClick={(e) => e.stopPropagation()}
-            column={p.column}
-            onFilterChange={(v) => (setFilter(f => ({...f, 'Temp_Desig': v})))}
-            />
-        </div>
-      ),
       sortable: true,
       resizable: true
     }, {
@@ -150,7 +118,7 @@ export function NeocpAsteroidsTable({
       // const seconds = Math.floor((((fraction * 24 - hours) * 60) - minutes) * 60);
       return `${year}-${month}-${day} (~${hours}:00)`
   }
-  const rows = applyAsteroidsFilter(features ?? [], filter)
+  const rows = applyAsteroidsFilter(features ?? [], filter, { ephemerids })
         .map(f => f.properties)
         .map(p => ({
           ...p,
@@ -214,15 +182,20 @@ export function NeocpAsteroidsTable({
   return (<div id="NeocpAsteroidsTable" style={{ display: 'flex', flexDirection: 'column' }}>
      <div>
       <div className="controls">
-          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
-          <button onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides for all</button>
+        <div>
+          <button title="refresh the list of asteroids" onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
+          <button title="Fetch ephemerides for all the objects in the table" onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides</button>
           <AsteroidFilter
             filter={filter}
             setFilter={setFilter}
             />
+        </div>
         <div style={{ textAlign: 'center', marginTop: '10px'}}>
-        {loading
-          ? `Loading ${loading}... ${progress} remaining`
+        {loading || loadingAsteroids
+          ?(<>
+            {loadingAsteroids ? 'Loading asteroids...' : null}
+            {loading ? `Loading ${loading}... ${progress} remaining` : null}
+            </>)
           : (<div>{
             filteredAsteroids?.features && (
                 `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
@@ -238,7 +211,7 @@ export function NeocpAsteroidsTable({
     </div>
         </div>
     </div>
-    <div style={{flex: 1, minHeight: 300}}>
+    <div style={{flex: 1, minHeight: 250}}>
       <DataGrid
         className="rdg-light"
         rowKeyGetter={rowKeyGetter}
@@ -250,10 +223,6 @@ export function NeocpAsteroidsTable({
         onSelectedRowsChange={setSelectedAsteroids}
       />
       </div>
-    <div>
-
-
-    </div>
     </div>)
 }
 

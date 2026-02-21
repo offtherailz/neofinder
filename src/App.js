@@ -10,6 +10,7 @@ import { CONFIG_KEYS, DEFAULT_EPHEM_PARAMS } from './constants';
 import Details from './components/Details';
 import Sidebar from './components/common/SideBar';
 import EphemTable from './components/EphemTable';
+import logo from './logo192.png';
 const HORIZON_RESOLUTION = 360; // points
 const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
 function App() {
@@ -37,6 +38,7 @@ function App() {
 
   // asteroids
   const [asteroids, setAsteroids] = useState();
+  const [loadingAsteroids, setLoadingAsteroids] = useState(false);
   const [showAsteroids, setShowAsteroids] = useState(() => {
     return getSetting(CONFIG_KEYS.SHOW_ASTEROIDS) ?? true
     });
@@ -63,8 +65,11 @@ function App() {
 
   // load asteroids
   useEffect(() => {
+    setLoadingAsteroids(true);
     fetchAsteroids().then(data => {
       setAsteroids(data);
+    }).finally(() => {
+      setLoadingAsteroids(false);
     });
   }, [refreshAsteroids]);
 
@@ -83,8 +88,9 @@ function App() {
       time,
       activeHorizon,
       horizonHeight,
+      ephemerids,
     };
-  }, [horizonData, position, time, activeHorizon, horizonHeight]);
+  }, [horizonData, position, time, activeHorizon, horizonHeight, ephemerids]);
   const filteredAsteroids = useMemo(() => {
     if (!asteroids || !filter) return asteroids;
     return applyAsteroidsFilter(asteroids, filter, filterData);
@@ -143,7 +149,18 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>NEO Finder</h1>
+        <img
+            style={{
+              height: '70px',
+              marginRight: '10px'
+            }}
+            src={logo}
+            className="App-logo"
+            alt="logo"
+          />
+        <h1>
+          NEO Finder
+          </h1>
         <div className="position-controls">
           <MyPosition
           position={position}
@@ -188,6 +205,7 @@ function App() {
           asteroids={asteroids}
           filteredAsteroids={filteredAsteroids}
           refreshAsteroids={refreshAsteroids}
+          loadingAsteroids={loadingAsteroids}
           setRefreshAsteroids={setRefreshAsteroids}
           selectedAsteroids={selectedAsteroids}
           setSelectedAsteroids={setSelectedAsteroids}

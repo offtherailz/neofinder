@@ -255,10 +255,34 @@ function filterMPCFeatureCollection(features, lat, lon, date = new Date(), horiz
  * @returns
  */
 export function applyAsteroidsFilter(asteroids, filter, filterData) {
+  if (!asteroids || !filter) return asteroids;
 
-  if (!asteroids || !filter || !asteroids?.features) return asteroids;
-  let { features } = asteroids;
-  if( filter?.horizon && filterData?.horizonData) {
+  // support passing either a feature array or an object with .features
+  let originalIsCollection = false;
+  let features = [];
+  if (Array.isArray(asteroids)) {
+    features = asteroids;
+  } else if (asteroids.features) {
+    originalIsCollection = true;
+    features = asteroids.features;
+  } else {
+    return asteroids; // unknown shape
+  }
+
+  // helper to parse numeric value or undefined
+  const toNum = v => {
+    if (v == null || v === '') return undefined;
+    const n = parseFloat(v);
+    return isNaN(n) ? undefined : n;
+  };
+  const inRange = (val, min, max) => {
+    if (min !== undefined && val < min) return false;
+    if (max !== undefined && val > max) return false;
+    return true;
+  };
+
+  // horizon filter uses special geometry logic
+  if (filter.horizon && filterData?.horizonData) {
     const { position, time, activeHorizon, horizonHeight } = filterData;
     if (activeHorizon) {
       features = filterMPCFeatureCollection(
@@ -267,28 +291,97 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
         position.longitude,
         time,
         horizonHeight
-      )
+      );
     }
-
-  }
-  let notSeenMax;
-    try{
-      notSeenMax = parseFloat(filter?.notSeenMax)
-    } catch(e) {
-      console.log(e);
-    }
-
-    if(notSeenMax) {
-      features = features.filter(({properties}) => {
-        return properties.Not_Seen_dys <= notSeenMax;
-      })
-    }
-  return {
-    ...asteroids,
-    features
   }
 
+  // text match on Temp_Desig (case-insensitive substring)
+  if (filter.Temp_Desig) {
+    const needle = filter.Temp_Desig.toString().toLowerCase();
+    features = features.filter(f =>
+      f.properties?.Temp_Desig?.toString().toLowerCase().includes(needle)
+    );
+  }
+  const tempDesig = filter.tempDesig;
+  // numeric ranges: score, coordinates, speed, nobs, not seen
+  const scoreMin = toNum(filter.scoreMin);
+  const scoreMax = toNum(filter.scoreMax);
+  const raMin = toNum(filter.raMin);
+  const raMax = toNum(filter.raMax);
+  const declMin = toNum(filter.declMin);
+  const declMax = toNum(filter.declMax);
+  const speedMin = toNum(filter.speedMin);
+  const speedMax = toNum(filter.speedMax);
+  const nobsMin = toNum(filter.nobsMin);
+  const nobsMax = toNum(filter.nobsMax);
+  const notSeenMin = toNum(filter.notSeenMin);
+  const notSeenMax = toNum(filter.notSeenMax);
+
+  // helper to compute average speed given ephemerides object
+  const averageSpeed = (id) => {
+    if (!filterData?.ephemerids) return undefined;
+    const entry = filterData.ephemerids[id];
+    const arr = entry?.ephem?.map(e => e.motion).filter(v => v != null);
+    if (!arr || arr.length === 0) return undefined;
+    const sum = arr.reduce((a, v) => a + v, 0);
+    return sum / arr.length;
+  };
+
+  if (
+    tempDesig !== undefined ||
+    scoreMin !== undefined ||
+    scoreMax !== undefined ||
+    raMin !== undefined ||
+    raMax !== undefined ||
+    declMin !== undefined ||
+    declMax !== undefined ||
+    speedMin !== undefined ||
+    speedMax !== undefined ||
+    nobsMin !== undefined ||
+    nobsMax !== undefined ||
+    notSeenMin !== undefined ||
+    notSeenMax !== undefined
+  ) {
+    features = features.filter(f => {
+      const p = f.properties || {};
+      if(tempDesig !== undefined) {
+        if (!p.Temp_Desig || !p.Temp_Desig.toString().toLowerCase().includes(tempDesig.toString().toLowerCase())) {
+          return false;
+        }
+      }
+      if (scoreMin !== undefined || scoreMax !== undefined) {
+        if (!inRange(p.Score, scoreMin, scoreMax)) return false;
+      }
+      if (raMin !== undefined || raMax !== undefined) {
+        if (!inRange(p['R.A.'], raMin, raMax)) return false;
+      }
+      if (declMin !== undefined || declMax !== undefined) {
+        if (!inRange(p['Decl.'], declMin, declMax)) return false;
+      }
+      if (nobsMin !== undefined || nobsMax !== undefined) {
+        if (!inRange(p.NObs, nobsMin, nobsMax)) return false;
+      }
+      if (notSeenMin !== undefined || notSeenMax !== undefined) {
+        if (!inRange(p.Not_Seen_dys, notSeenMin, notSeenMax)) return false;
+      }
+      if (speedMin !== undefined || speedMax !== undefined) {
+        const avg = averageSpeed(p.Temp_Desig);
+        if (avg === undefined) return false;
+        if (!inRange(avg, speedMin, speedMax)) return false;
+      }
+      return true;
+    });
+  }
+
+  if (originalIsCollection) {
+    return {
+      ...asteroids,
+      features
+    };
+  }
+  return features;
 }
+
 
 export function zenithRADec(latDeg, lonDeg, date = new Date()) {
 

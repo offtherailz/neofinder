@@ -216,9 +216,6 @@ export default function AsteroidFilter({ filter, setFilter }) {
             <button type="button" onClick={clearAll}>
               Clear
             </button>
-            <button type="button" onClick={() => setShowFilters(false)}>
-              Apply
-            </button>
           </div>
         </form>
       </Modal>

@@ -18,7 +18,7 @@ export default function AutoHeightDataGrid({ ...props}) {
       <DataGrid
         {...props}
         height={height}
-        style={{ height: height ? height : '100%' }} // Subtracting 2px for borders/margins
+        style={{ height: height ? height : null }} // Subtracting 2px for borders/margins
       />
   );
 }
