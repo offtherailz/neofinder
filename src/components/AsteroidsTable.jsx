@@ -5,10 +5,31 @@ import 'react-data-grid/lib/styles.css';
 import './style/asteroid-table.css';
 import { applyAsteroidsFilter } from '../utils/utils';
 import { FaFilter } from 'react-icons/fa';
-import { GiAsteroid } from 'react-icons/gi';
+import { GiAsteroid, GiMoonOrbit, GiOrbit } from 'react-icons/gi';
 import { fetchEphemerides } from '../api/neocp';
 import { DEFAULT_EPHEM_PARAMS } from '../constants';
 import AsteroidFilter from './AstFilter';
+
+const FilterRenderer = ({ column, onFilterChange }) => {
+  const [filterValue, setFilterValue] = useState('');
+  const handleChange = (e) => {
+    setFilterValue(e.target.value);
+    onFilterChange(e.target.value);
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <FaFilter style={{ marginRight: '4px' }} />
+      <input
+        type="text"
+        value={filterValue}
+        onChange={handleChange}
+        placeholder={`Filter ${column.name}`}
+        style={{ width: '100%' }}
+      />
+    </div>
+  );
+}
+
 const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(3) : NaN;
 export function NeocpAsteroidsTable({
     ephemParams,
@@ -48,7 +69,7 @@ export function NeocpAsteroidsTable({
               console.log(e);
             })
         }}>
-        <GiAsteroid title="Get ephemerides" />
+        <GiMoonOrbit title="Get ephemerides" />
       </button>),
     width: 100,
   }), [ephemParams, ephemerids, setEphemerids]);
@@ -59,6 +80,16 @@ export function NeocpAsteroidsTable({
     {
       key: 'Temp_Desig',
       name: 'Temp_Desig',
+      renderHeaderCell: (p) => (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span>{p.column.name}</span>
+          <FilterRenderer
+            onClick={(e) => e.stopPropagation()}
+            column={p.column}
+            onFilterChange={(v) => (setFilter(f => ({...f, 'Temp_Desig': v})))}
+            />
+        </div>
+      ),
       sortable: true,
       resizable: true
     }, {
@@ -183,9 +214,8 @@ export function NeocpAsteroidsTable({
   return (<div id="NeocpAsteroidsTable" style={{ display: 'flex', flexDirection: 'column' }}>
      <div>
       <div className="controls">
-          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
-          <button onClick={() => setFilter({})}>Reset Filter</button>
-          <button onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}>Fetch ephemerides for all</button>
+          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
+          <button onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides for all</button>
           <AsteroidFilter
             filter={filter}
             setFilter={setFilter}

@@ -1,0 +1,36 @@
+/* compact grid layout for asteroid filter form */
+.filter-form fieldset {
+  border: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.filter-form legend {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.filter-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.4rem 1rem;
+  align-items: center;
+}
+
+.filter-group label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* horizon toggle button is styled in existing css but ensure sensible spacing */
+.filter-group .horizon-toggle {
+  grid-column: span 2;
+}

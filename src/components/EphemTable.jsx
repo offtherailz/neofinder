@@ -44,29 +44,10 @@ export default function EphemTable({ephemerids}) {
     });
   }, [rows, filters]);
 
-  // Header filters renderer
-  function FilterRenderer({ column }) {
-    return (
-      <input
-        style={{ width: "100%" }}
-        placeholder={`Filter ${column.name}`}
-        value={filters[column.key] ?? ""}
-        onChange={(e) =>
-          setFilters({ ...filters, [column.key]: e.target.value })
-        }
-      />
-    );
-  }
 
   // Enhance columns with filter renderer
   const columnsWithFilters = columns.map((col) => ({
-    ...col,
-    headerRenderer: (p) => (
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <span>{p.column.name}</span>
-        <FilterRenderer column={p.column} />
-      </div>
-    )
+    ...col
   }));
 
   return (
