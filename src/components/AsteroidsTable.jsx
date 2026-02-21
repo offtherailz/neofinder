@@ -109,7 +109,7 @@ export function NeocpAsteroidsTable({
   function getSpeed(dd = []) {
     const avgSpeed = arrayAvg(dd.map(ep => ep?.motion).filter(ep => !!ep));
     if(isNaN(avgSpeed)) return "n/a";
-    return
+    return avgSpeed;
   }
   function getDiscoveryDate(data = {}) {
       const year = data.Discovery_year;

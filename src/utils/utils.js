@@ -310,6 +310,7 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
   const raMax = toNum(filter.raMax);
   const declMin = toNum(filter.declMin);
   const declMax = toNum(filter.declMax);
+  const motionNA = filter.motionNA;
   const speedMin = toNum(filter.speedMin);
   const speedMax = toNum(filter.speedMax);
   const nobsMin = toNum(filter.nobsMin);
@@ -366,7 +367,7 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
       }
       if (speedMin !== undefined || speedMax !== undefined) {
         const avg = averageSpeed(p.Temp_Desig);
-        if (avg === undefined) return false;
+        if (avg === undefined) return motionNA ? true : false; // if no data, include only if motionNA is checked
         if (!inRange(avg, speedMin, speedMax)) return false;
       }
       return true;
