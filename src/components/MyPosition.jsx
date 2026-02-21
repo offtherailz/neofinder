@@ -98,10 +98,6 @@ const MyPosition = ({
         disabled={isLoading}>
           <FaMapMarkerAlt />
         </button>
-        <button title="reset position"
-        onClick={() => setPosition(null)}>
-          <FaUndo />
-        </button>
         <button title="save position"
         onClick={saveSettings}>
           <FaSave />

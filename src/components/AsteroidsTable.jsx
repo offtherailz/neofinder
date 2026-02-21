@@ -28,7 +28,8 @@ export function NeocpAsteroidsTable({
     setFilter = () => {},
 }) {
   const [sortColumns, setSortColumns] = useState([]);
-const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState();
+  const [progress, setProgress] = useState(0);
   const features = filteredAsteroids?.features || [];
 
   const buttonsColumn = useMemo(() => ({
@@ -145,29 +146,65 @@ const [loading, setLoading] = useState();
   }
   function rowKeyGetter(row) {
     return row.name;
+  }
+
+  const fetchAllEphemerides = (obj) => {
+    setLoading("ephemerides");
+    // if obj are too many, we should batch them to avoid overloading the server
+    const batchSize = 1;
+    const batches = [];
+    for (let i = 0; i < obj.length; i += batchSize) {
+      batches.push(obj.slice(i, i + batchSize));
     }
+    // one at a time to avoid overloading the server
+
+    const processBatches = async () => {
+      // set counter to track progress
+      setProgress(batches.length);
+      for (const batch of batches) {
+        try {
+          const result = await fetchEphemerides({ ...ephemParams, obj: batch });
+          setEphemerids((ee) => ({
+            ...ee,
+            ...result
+          }));
+        } catch (e) {
+          console.log(e);
+        } finally {
+            setProgress((p) => p - 1);
+        }
+      }
+      setLoading(false);
+      setProgress(0);
+    };
+    processBatches();
+
+  };
   return (<div id="NeocpAsteroidsTable" style={{ display: 'flex', flexDirection: 'column' }}>
      <div>
       <div className="controls">
           <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
           <button onClick={() => setFilter({})}>Reset Filter</button>
-
+          <button onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}>Fetch ephemerides for all</button>
           <AsteroidFilter
             filter={filter}
             setFilter={setFilter}
             />
         <div style={{ textAlign: 'center', marginTop: '10px'}}>
-        {
-          filteredAsteroids?.features && (
-             `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
-          )
+        {loading
+          ? `Loading ${loading}... ${progress} remaining`
+          : (<div>{
+            filteredAsteroids?.features && (
+                `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
+              )
+            }
+            {selectedAsteroids.length > 0 && (
+                `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
+            )}
+            {asteroids && asteroids.features.length > 0 && (
+                `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
+            )}</div>)
         }
-        {selectedAsteroids.length > 0 && (
-            `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
-        )}
-        {asteroids && asteroids.features.length > 0 && (
-            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
-        )}
     </div>
         </div>
     </div>
