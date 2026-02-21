@@ -367,7 +367,7 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
       }
       if (speedMin !== undefined || speedMax !== undefined) {
         const avg = averageSpeed(p.Temp_Desig);
-        if (avg === undefined) return motionNA ? true : false; // if no data, include only if motionNA is checked
+        if (avg === undefined) return false;
         if (!inRange(avg, speedMin, speedMax)) return false;
       }
       return true;

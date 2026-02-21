@@ -159,15 +159,6 @@ export default function AsteroidFilter({ filter, setFilter }) {
                   step="any"
                 />
               </label>
-              <label>
-                N/A
-                <input
-                  type="checkbox"
-                  name="speedNA"
-                  checked={filter.motionNA || false}
-                  onChange={() => toggleFlag('speedNA')}
-                />
-              </label>
             </div>
           </fieldset>
 
