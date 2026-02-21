@@ -62,6 +62,7 @@ export function NeocpAsteroidsTable({
       resizable: true
     }, {
       key: 'Score',
+      width: 80,
       name: 'Score',
       sortable: true,
       resizable: true
@@ -83,11 +84,13 @@ export function NeocpAsteroidsTable({
     },{
       key: 'NObs',
       name: 'NObs',
+      width: 80,
       sortable: true,
       resizable: true
     },{
       key: 'Not_Seen_dys',
       name: 'Not seen(days)',
+
       sortable: true,
       resizable: true
     },{
@@ -104,7 +107,9 @@ export function NeocpAsteroidsTable({
   ]
 
   function getSpeed(dd = []) {
-    return arrayAvg(dd.map(ep => ep?.motion).filter(ep => !!ep))
+    const avgSpeed = arrayAvg(dd.map(ep => ep?.motion).filter(ep => !!ep));
+    if(isNaN(avgSpeed)) return "n/a";
+    return
   }
   function getDiscoveryDate(data = {}) {
       const year = data.Discovery_year;
