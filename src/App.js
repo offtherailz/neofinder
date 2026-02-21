@@ -8,6 +8,8 @@ import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
 import { CONFIG_KEYS, DEFAULT_EPHEM_PARAMS } from './constants';
 import Details from './components/Details';
+import Sidebar from './components/common/SideBar';
+import EphemTable from './components/EphemTable';
 const HORIZON_RESOLUTION = 360; // points
 const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
 function App() {
@@ -87,6 +89,7 @@ function App() {
     if (!asteroids || !filter) return asteroids;
     return applyAsteroidsFilter(asteroids, filter, filterData);
   }, [asteroids, filter, filterData]);
+  const [showEphemName, setShowEphemName] = useState();
   const data = useMemo(() => {
 
     return [
@@ -166,17 +169,17 @@ function App() {
 
 
       </header>
-      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+      <main>
         <SkyMap data={data}
         // geopos={position ? [position.latitude, position.longitude] : undefined}
         configOverrides={configOverrides} />
-        <Details
-          asteroids={asteroids?.features?.map(({properties}) => properties) }
-          ephemerids={ephemerids}
-          selectedAsteroids={selectedAsteroids}
-        />
-      </div>
+
+
       <NeocpAsteroidsTable
+        openEphemerides={name =>
+          setShowEphemName(name)
+
+        }
           ephemerids={ephemerids}
           setEphemerids={setEphemerids}
           ephemParams={ephemParams}
@@ -191,6 +194,19 @@ function App() {
           filter={filter}
           setFilter={setFilter}
         />
+      </main>
+      <Sidebar
+        title={`Ephemerids for ${showEphemName}`}
+        isOpen={showEphemName}
+        setIsOpen={setShowEphemName}
+        position="right"
+        width="500"
+        >
+
+          <EphemTable
+            ephemerids={ephemerids?.[showEphemName]}
+            />
+        </Sidebar>
     </div>
   );
 }

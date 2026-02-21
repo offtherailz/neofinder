@@ -28,6 +28,7 @@ const MyPosition = ({
   setShowAsteroids = () => {},
 }) => {
   const [error, setError] = useState(null);
+  const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
 
@@ -74,7 +75,18 @@ const MyPosition = ({
   return (<>
     <div className="position-viewer">
       <div className="position-viewer-header">
-        <h2>Position</h2>
+        <button style={{
+          // not like a button
+          background: 'none',
+          border: 'none',
+          fontSize: '1rem',
+          cursor: 'pointer',
+        }}
+        alt="Expand/Collapse position viewer"
+        title={collapsed ? "expand" : "collapse"} onClick={() => setCollapsed(!collapsed)}>
+          {collapsed ? '▼' : '▲'}
+        </button>
+        <h2>Position</h2>&nbsp;&nbsp;
         <div className="position-viewer-buttons">
           <button className={showEphemParamsForm ? "button-active" : ""} title="Show params form"
         onClick={() => setShowEphemParamsForm(!showEphemParamsForm)}
@@ -108,57 +120,57 @@ const MyPosition = ({
         </button>
         </div>
       </div>
-      <div className="position-viewer-content">
-        <label>
-          Lat:
-          <input
-            type="number"
-            value={position?.latitude || ''}
-            onChange={(e) => setPosition({ ...position, latitude: parseFloat(e.target.value) })}
-            disabled={isLoading}
-          />
-        </label>
-        <label>
-          Lon:
-          <input
-            type="number"
-            value={position?.longitude || ''}
-            onChange={(e) => setPosition({ ...position, longitude: parseFloat(e.target.value) })}
-            disabled={isLoading}
-          />
-        </label>
-        <label>
-          Hor(deg):
-          <input
-            type="number"
-            value={horizonHeight || ''}
-            onChange={(e) => setHorizonHeight(parseFloat(e.target.value))}
-            disabled={isLoading}
-          />
-        </label>
-        <label>
-          Time:
-          <UTCDateTimePicker
-            className="time-picker"
-            value={time}
-            onChange={(newTime) => setTime(newTime)}
-            disabled={isLoading}
-          />
-        </label>
-        <label>
-          Refresh:
-          <select value={refreshTime} onChange={(e) => {
-            setRefreshTime(e.target.value);
-          }}>
-            <option value={30000}>30s</option>
-            <option value={60000}>1m</option>
-            <option value={300000}>5m</option>
-            <option value={600000}>10m</option>
-          </select>
+      {!collapsed && (<div className="position-viewer-content">
+          <label>
+            Lat :
+            <input
+              type="number"
+              value={position?.latitude || ''}
+              onChange={(e) => setPosition({ ...position, latitude: parseFloat(e.target.value) })}
+              disabled={isLoading}
+            />
+          </label>
+          <label>
+            Lon :
+            <input
+              type="number"
+              value={position?.longitude || ''}
+              onChange={(e) => setPosition({ ...position, longitude: parseFloat(e.target.value) })}
+              disabled={isLoading}
+            />
+          </label>
+          <label>
+            Hor (deg):
+            <input
+              type="number"
+              value={horizonHeight || ''}
+              onChange={(e) => setHorizonHeight(parseFloat(e.target.value))}
+              disabled={isLoading}
+            />
+          </label>
+          <label>
+            Time (UTC):
+            <UTCDateTimePicker
+              className="time-picker"
+              value={time}
+              onChange={(newTime) => setTime(newTime)}
+              disabled={isLoading}
+            />
+          </label>
+          <label>
+            Refresh:
+            <select value={refreshTime} onChange={(e) => {
+              setRefreshTime(e.target.value);
+            }}>
+              <option value={30000}>30s</option>
+              <option value={60000}>1m</option>
+              <option value={300000}>5m</option>
+              <option value={600000}>10m</option>
+            </select>
 
 
-        </label>
-      </div>
+          </label>
+        </div>)}
     </div>
     {
       <Modal open={showEphemParamsForm} onClose={() => {setShowEphemParamsForm(false)}}>

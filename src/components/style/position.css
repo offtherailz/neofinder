@@ -1,5 +1,4 @@
 .position-viewer {
-  scale: 0.8;
   max-width: 300px;
   margin: 0 auto;
   background: #fff;
@@ -13,6 +12,11 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 20px;
+}
+@media screen and (max-width: 768px)  {
+  .position-viewer-header {
+    scale: 0.8
+  }
 }
 
 .position-viewer-header h2 {
@@ -49,3 +53,4 @@
 .button-active {
   background: #014e1e;
 }
+

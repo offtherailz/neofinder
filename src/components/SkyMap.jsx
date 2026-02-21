@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import celestial from "d3-celestial";
 import './style/celestial.css';
 import './style/sky-map.css';
+import useResizeObserver from "../hooks/useResizeObserver";
 const Celestial = celestial.Celestial();
 window.Celestial = Celestial;
 
@@ -135,7 +136,7 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
   const Celestial = window.Celestial;
   const containerRef = useRef(null);
   const [showForm, setShowForm] = useState(false);
-  // const dimensions = useResizeObserver(containerRef);
+  const dimensions = useResizeObserver(containerRef);
   const config = useMemo(() => ({
         ...DEFAULT_CONFIG,
         container: "map",
@@ -161,7 +162,7 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
   }
 
   return (<div className="sky-map">
-      <div id="map-section" className={showForm ? 'show-form' : ''}>
+      <div id="map-section" key="map-section">
         <div
           ref={containerRef} id="map-container"
           className={`sky-map-container ${showForm ? 'showform' : ''}`}>
@@ -169,12 +170,17 @@ function SkyMap({geopos = [36.525321, -121.815916], date = "2021-09-25T04:00:00+
           <div id="celestial-form" style={{display: showForm ? 'block' : 'none'}} />
         </div>
       </div>
-      <div className="sky-map-controls-section">
+      {/*
+      <div className="sky-map-controls-section" key="controls-section">
         <button id="toggle-form" onClick={() => Celestial.clear()}>clear</button>
+
+        // this is for debugging, and to not work well
         <button id="toggle-form" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Hide Form' : 'Show Form'}
         </button>
+
       </div>
+      */}
       </div>
   );
 }

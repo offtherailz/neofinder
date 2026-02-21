@@ -1,5 +1,11 @@
 
 /* fix to force column to work */
+#NeocpAsteroidsTable .controls {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
 .rdg-cell.rdg-cell-resizable {
   display: block !important;
 }

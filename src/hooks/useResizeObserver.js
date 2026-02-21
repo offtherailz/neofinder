@@ -5,12 +5,15 @@ export default function useResizeObserver(ref) {
 
   useEffect(() => {
     const observer = new ResizeObserver(entries => {
-      if (entries[0]) {
-        const { width, height } = entries[0].contentRect;
-        if (width !== dimensions.width || height !== dimensions.height) {
-            setDimensions({ width, height });
+      window.requestAnimationFrame(() => {
+      if (!Array.isArray(entries) || !entries.length) return;
+        if (entries[0]) {
+          const { width, height } = entries[0].contentRect;
+          if (width !== dimensions.width || height !== dimensions.height) {
+              setDimensions({ width, height });
+          }
         }
-      }
+      });
     });
 
     if (ref.current) {

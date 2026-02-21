@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { DataGrid, SelectColumn } from 'react-data-grid';
+import { SelectColumn } from 'react-data-grid';
+import DataGrid from './common/AutoHeightDataGrid';
 import 'react-data-grid/lib/styles.css';
 import './style/asteroid-table.css';
 import { applyAsteroidsFilter } from '../utils/utils';
@@ -21,29 +22,33 @@ export function NeocpAsteroidsTable({
     filter = {},
     horizonData = {},
     ephemerids = {},
+    openEphemerides = () => {},
     setEphemerids = () => {},
+    openPanel,
     setFilter = () => {},
 }) {
   const [sortColumns, setSortColumns] = useState([]);
-
+const [loading, setLoading] = useState();
   const features = filteredAsteroids?.features || [];
 
   const buttonsColumn = useMemo(() => ({
     key: 'actions',
     name: 'Actions',
-    renderCell: ({ row }) => (
-      <button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
+    renderCell: ({ row }) => (<button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
           fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig })
             .then(newEphemerides => {
               setEphemerids((ee) => ({
                 ...ee,
                 ...newEphemerides
-              }))
+              }));
+              openEphemerides(row.Temp_Desig);
+
+            }).catch(e => {
+              console.log(e);
             })
         }}>
         <GiAsteroid title="Get ephemerides" />
-      </button>
-    ),
+      </button>),
     width: 100,
   }), [ephemParams, ephemerids, setEphemerids]);
 
@@ -141,7 +146,20 @@ export function NeocpAsteroidsTable({
   function rowKeyGetter(row) {
     return row.name;
     }
-  return (<div id="NeocpAsteroidsTable" style={{ height: 600, width: '100%' }}>
+  return (<div id="NeocpAsteroidsTable" style={{ display: 'flex', flexDirection: 'column' }}>
+     <div>
+      <div className="controls">
+          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
+          <button onClick={() => setFilter({})}>Reset Filter</button>
+
+          <AsteroidFilter
+            filter={filter}
+            setFilter={setFilter}
+            />
+
+        </div>
+    </div>
+    <div style={{flex: 1, minHeight: 300}}>
       <DataGrid
         className="rdg-light"
         rowKeyGetter={rowKeyGetter}
@@ -152,6 +170,7 @@ export function NeocpAsteroidsTable({
         selectedRows={selectedAsteroids}
         onSelectedRowsChange={setSelectedAsteroids}
       />
+      </div>
     <div>
     <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
         {
@@ -166,18 +185,7 @@ export function NeocpAsteroidsTable({
             `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
         )}
     </div>
-    <div>
-      <div className="controls">
-          <button onClick={() => setRefreshAsteroids(!refreshAsteroids)}>Refresh Asteroids</button>
-          <button onClick={() => setFilter({})}>Reset Filter</button>
 
-          <AsteroidFilter
-            filter={filter}
-            setFilter={setFilter}
-            />
-
-        </div>
-    </div>
     </div>
     </div>)
 }

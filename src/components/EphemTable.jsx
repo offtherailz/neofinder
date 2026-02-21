@@ -1,11 +1,17 @@
 import React, { useState, useMemo } from "react";
-import { DataGrid } from 'react-data-grid';
+import DataGrid from "./common/AutoHeightDataGrid";
 import "react-data-grid/lib/styles.css";
 
 
-export default function EphemTable({ephemerids = []}) {
-  const rows = ephemerids;
+/**
+ * Component to display ephemerids in a table format using react-data-grid.
+ * @param {ephemerids[]} array of ephemerids
+ * @returns
+ */
+export default function EphemTable({ephemerids}) {
+  const rows = ephemerids?.ephem ?? [];
   const [filters, setFilters] = useState({});
+
 
   // Define columns
   const columns = useMemo(

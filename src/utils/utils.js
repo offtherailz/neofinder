@@ -164,7 +164,7 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
     // Conversion in degrees
     const newLon = rad2deg(ra); // RA è la Longitudine nel sistema equatoriale
     const newLat = rad2deg(dec); // Dec è la Latitudine nel sistema equatoriale
-    coordinates.push([newLon.toFixed(4), newLat.toFixed(4)]);
+    coordinates.push([newLon.toFixed(2), newLat.toFixed(2)]);
   }
 
   return {

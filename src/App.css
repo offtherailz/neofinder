@@ -1,11 +1,22 @@
 .App {
   font-family: sans-serif;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 .App-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+.App main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+#NeocpAsteroidsTable {
+  flex: 1;
 }
 .position-controls {
   top: 0;
