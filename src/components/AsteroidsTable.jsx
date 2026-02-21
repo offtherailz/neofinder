@@ -156,7 +156,19 @@ const [loading, setLoading] = useState();
             filter={filter}
             setFilter={setFilter}
             />
-
+        <div style={{ textAlign: 'center', marginTop: '10px'}}>
+        {
+          filteredAsteroids?.features && (
+             `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
+          )
+        }
+        {selectedAsteroids.length > 0 && (
+            `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
+        )}
+        {asteroids && asteroids.features.length > 0 && (
+            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
+        )}
+    </div>
         </div>
     </div>
     <div style={{flex: 1, minHeight: 300}}>
@@ -172,19 +184,7 @@ const [loading, setLoading] = useState();
       />
       </div>
     <div>
-    <div style={{width: '100%', textAlign: 'center', marginTop: '10px'}}>
-        {
-          filteredAsteroids?.features && (
-             `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
-          )
-        }
-        {selectedAsteroids.length > 0 && (
-            `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
-        )}
-        {asteroids && asteroids.features.length > 0 && (
-            `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
-        )}
-    </div>
+
 
     </div>
     </div>)
