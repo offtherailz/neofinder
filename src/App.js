@@ -218,10 +218,11 @@ function App() {
         isOpen={showEphemName}
         setIsOpen={setShowEphemName}
         position="right"
-        width="500"
+        width={700}
         >
 
           <EphemTable
+            height="100%"
             ephemerids={ephemerids?.[showEphemName]}
             />
         </Sidebar>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './SideBar.css';
 
-const Sidebar = ({width = 500, position="left", isOpen, setIsOpen,children, title}) => {
+const Sidebar = ({width = 700, position="left", isOpen, setIsOpen,children, title}) => {
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -15,6 +15,7 @@ const Sidebar = ({width = 500, position="left", isOpen, setIsOpen,children, titl
       {/* The Sidebar */}
       {isOpen && (<div className={`sidebar ${isOpen ? 'open' : ''}`}
       style={{
+        maxWidth: "100%",
         width,
         display: 'flex',
         flexDirection: 'column',

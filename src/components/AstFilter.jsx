@@ -160,11 +160,11 @@ export default function AsteroidFilter({ filter, setFilter }) {
                 />
               </label>
               <label>
-                Motion N/A
+                N/A
                 <input
                   type="checkbox"
                   name="motionNA"
-                  checked={!!filter.motionNA}
+                  checked={filter.motionNA ?? true}
                   onChange={() => toggleFlag('motionNA')}
                 />
               </label>
