@@ -159,6 +159,15 @@ export default function AsteroidFilter({ filter, setFilter }) {
                   step="any"
                 />
               </label>
+              <label>
+                Motion N/A
+                <input
+                  type="checkbox"
+                  name="motionNA"
+                  checked={!!filter.motionNA}
+                  onChange={() => toggleFlag('motionNA')}
+                />
+              </label>
             </div>
           </fieldset>
 
@@ -185,7 +194,51 @@ export default function AsteroidFilter({ filter, setFilter }) {
               </label>
             </div>
           </fieldset>
-
+          <fieldset>
+            <legend>Light</legend>
+            <div className="filter-group">
+              <label>
+                Min V
+                <input
+                  type="number"
+                  name="vMin"
+                  value={filter.vMin || ''}
+                  onChange={handleChange}
+                  step="any"
+                />
+              </label>
+              <label>
+                Max V
+                <input
+                  type="number"
+                  name="vMax"
+                  value={filter.vMax || ''}
+                  onChange={handleChange}
+                  step="any"
+                />
+              </label>
+              <label>
+                Min H
+                <input
+                  type="number"
+                  name="hMin"
+                  value={filter.hMin || ''}
+                  onChange={handleChange}
+                  step="any"
+                />
+              </label>
+              <label>
+                Max H
+                <input
+                  type="number"
+                  name="hMax"
+                  value={filter.hMax || ''}
+                  onChange={handleChange}
+                  step="any"
+                />
+              </label>
+            </div>
+          </fieldset>
           <fieldset>
             <legend>Not seen</legend>
             <div className="filter-group">

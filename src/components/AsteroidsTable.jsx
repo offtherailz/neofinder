@@ -94,8 +94,13 @@ export function NeocpAsteroidsTable({
       sortable: true,
       resizable: true
     },{
-      key: 'discovery',
-      name: 'discovery',
+      key: 'V',
+      name: 'V',
+      sortable: true,
+      resizable: true
+    },{
+      key: 'H',
+      name: 'H',
       sortable: true,
       resizable: true
     },{

@@ -317,6 +317,10 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
   const nobsMax = toNum(filter.nobsMax);
   const notSeenMin = toNum(filter.notSeenMin);
   const notSeenMax = toNum(filter.notSeenMax);
+  const vMin = toNum(filter.vMin);
+  const vMax = toNum(filter.vMax);
+  const hMin = toNum(filter.hMin);
+  const hMax = toNum(filter.hMax);
 
   // helper to compute average speed given ephemerides object
   const averageSpeed = (id) => {
@@ -341,7 +345,12 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
     nobsMin !== undefined ||
     nobsMax !== undefined ||
     notSeenMin !== undefined ||
-    notSeenMax !== undefined
+    notSeenMax !== undefined ||
+    vMin !== undefined ||
+    vMax !== undefined ||
+    hMin !== undefined ||
+    hMax !== undefined ||
+    motionNA
   ) {
     features = features.filter(f => {
       const p = f.properties || {};
@@ -367,9 +376,21 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
       }
       if (speedMin !== undefined || speedMax !== undefined) {
         const avg = averageSpeed(p.Temp_Desig);
+        if( (motionNA !== false && avg === undefined)
+            || (motionNA !== false && isNaN(avg))) {
+          return true; // if motionNA is checked, include objects with no speed data
+        }
         if (avg === undefined) return false;
         if (!inRange(avg, speedMin, speedMax)) return false;
       }
+      if (vMin !== undefined || vMax !== undefined) {
+        if (!inRange(p.V, vMin, vMax)) return false;
+      }
+      if (hMin !== undefined || hMax !== undefined) {
+        if (!inRange(p.H, hMin, hMax)) return false;
+      }
+
+
       return true;
     });
   }
