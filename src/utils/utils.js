@@ -321,6 +321,9 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
   const vMax = toNum(filter.vMax);
   const hMin = toNum(filter.hMin);
   const hMax = toNum(filter.hMax);
+  const noteB = filter.noteB;
+  const noteS = filter.noteS;
+  const noteUndefined = filter.noteUndefined;
 
   // helper to compute average speed given ephemerides object
   const averageSpeed = (id) => {
@@ -350,7 +353,11 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
     vMax !== undefined ||
     hMin !== undefined ||
     hMax !== undefined ||
-    motionNA
+    noteB !== undefined ||
+    noteS !== undefined ||
+    noteUndefined !== undefined ||
+
+    motionNA !== undefined
   ) {
     features = features.filter(f => {
       const p = f.properties || {};
@@ -389,6 +396,16 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
       if (hMin !== undefined || hMax !== undefined) {
         if (!inRange(p.H, hMin, hMax)) return false;
       }
+      if (noteB !== undefined && p.Note && p.Note === "B") {
+        return noteB;
+      }
+      if (noteS !== undefined && p.Note && p.Note === "S") {
+          return noteS;
+      }
+      if (noteUndefined !== undefined && !p.Note) {
+        return noteUndefined;
+      }
+
 
 
       return true;

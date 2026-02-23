@@ -165,7 +165,10 @@ export default function AsteroidFilter({ filter, setFilter }) {
                   type="checkbox"
                   name="motionNA"
                   checked={filter.motionNA ?? true}
-                  onChange={() => toggleFlag('motionNA')}
+                  onChange={(e) => setFilter({
+                    ...filter,
+                    motionNA: !(filter?.motionNA ?? true)
+                  })}
                 />
               </label>
             </div>
@@ -263,6 +266,46 @@ export default function AsteroidFilter({ filter, setFilter }) {
                 />
               </label>
             </div>
+          </fieldset>
+          <fieldset>
+            <legend>Note</legend>
+            <div className="filter-group"></div>
+                <label>
+                S
+                <input
+                  type="checkbox"
+                  name="noteS"
+                  checked={filter.noteS ?? true}
+                  onChange={(e) => setFilter({
+                    ...filter,
+                    noteS: !(filter?.noteS ?? true)
+                  })}
+                />
+                </label>
+                <label>
+                B
+                <input
+                  type="checkbox"
+                  name="noteB"
+                  checked={filter.noteB ?? true}
+                  onChange={(e) => setFilter({
+                    ...filter,
+                    noteB: !(filter?.noteB ?? true)
+                  })}
+                />
+                </label>
+                <label>
+                No notes
+                <input
+                  type="checkbox"
+                  name="noteUndefined"
+                  checked={filter.noteUndefined ?? true}
+                  onChange={(e) => setFilter({
+                    ...filter,
+                    noteUndefined: !(filter?.noteUndefined ?? true)
+                  })}
+                />
+                </label>
           </fieldset>
 
           <div className="filter-buttons">

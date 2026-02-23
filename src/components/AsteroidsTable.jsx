@@ -96,11 +96,22 @@ export function NeocpAsteroidsTable({
     },{
       key: 'V',
       name: 'V',
+      width: 80,
+
       sortable: true,
       resizable: true
     },{
       key: 'H',
       name: 'H',
+      width: 80,
+
+      sortable: true,
+      resizable: true
+    },{
+      key: 'Note',
+      name: 'Note',
+      width: 80,
+
       sortable: true,
       resizable: true
     },{
