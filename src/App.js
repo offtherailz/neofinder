@@ -149,19 +149,21 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img
-            style={{
-              height: '70px',
-              marginRight: '10px'
-            }}
+         <img
             src={logo}
             className="App-logo"
             alt="logo"
           />
         <h1>
+
           NEO Finder
           </h1>
-        <div className="position-controls">
+
+
+
+
+      </header>
+      <div className="position-controls">
           <MyPosition
           position={position}
           setPosition={setPosition}
@@ -182,10 +184,6 @@ function App() {
           ephemParams={ephemParams}
           setEphemParam={setEphemParam}
         /></div>
-
-
-
-      </header>
       <main>
         <SkyMap data={data}
         // geopos={position ? [position.latitude, position.longitude] : undefined}

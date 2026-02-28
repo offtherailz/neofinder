@@ -14,12 +14,22 @@ body {
 .App-header {
   height: 100px;
   z-index: 100;
-
   margin: 10px;
+  margin-right: 200px;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: start;
+  font-size: 1.5em;
+  display: flex;
+  margin: 10px;
+  align-items: top;
+  font-style: italic;
 }
+.App-header img {
+  height: 120px;
+  margin-right: 10px;
+}
+
 .App main {
   flex: 1;
   display: flex;
@@ -32,8 +42,11 @@ body {
   flex: 1;
 }
 .position-controls {
+  position: absolute;
   top: 0;
   right: 0;
+  z-index: 100;
+  margin: 10px;
 }
 
 .button-active {
@@ -41,3 +54,10 @@ body {
   color: white;
 }
 
+footer {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+}
