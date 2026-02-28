@@ -25,6 +25,7 @@ const DEFAULT_CONFIG = {
     fill: "#000000",   // Area below horizon
     opacity: 0.5
   },
+
   stars: {
     show:false,
     colors: false,
@@ -55,11 +56,25 @@ const DEFAULT_STYLES = {
   lineStyles: {
     default: DEFAULT_LINE_STYLE,
     asteroids: DEFAULT_LINE_STYLE,
-    horizon: DEFAULT_LINE_STYLE,
+    horizon: {
+      stroke: "rgb(178, 178, 250)",
+      fill: "rgba(178, 178, 250, 0.4)",
+      width: 1.0
+    },
     selected: {
       stroke: "#00f",
-       fill: "rgba(255, 204, 204, 0.4)",
-      width: 5
+       fill: "rgba(255, 204, 204, 0.2)",
+       width: 5
+    },
+    ephemerids: {
+      show: true,
+      stroke: "rgb(0, 139, 70)",
+      width: 5.0
+    },
+    selectedEphem: {
+      show: true,
+      stroke: "rgb(0, 0, 255)",
+      width: 5.0
     }
   },
   textStyles: {

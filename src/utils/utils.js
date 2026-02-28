@@ -4,14 +4,14 @@ export const rad2deg = r => r * 180 / Math.PI;
 
 
 
-  // Calcolo tempo siderale locale (in radianti)
-  function localSiderealTime(date, lon) {
+// calculate sideral time
+function localSiderealTime(date, lon) {
     const JD = (date.getTime() / 86400000.0) + 2440587.5;
     const D = JD - 2451545.0;
     let GMST = 280.46061837 + 360.98564736629 * D;
     GMST = (GMST % 360 + 360) % 360; // normalizza [0,360)
     return deg2rad(GMST) + lon;
-  }
+}
 
 const DEFAULT_SETTINGS = {
     raProp: 'ra',
@@ -68,11 +68,11 @@ export function hour2degree(ra) {
 
 
 /**
- * Calcola i punti per disegnare la linea dell'orizzonte virtuale.
- * @param {number} latitude - Latitudine del punto centrale (la tua posizione).
- * @param {number} longitude - Longitudine del punto centrale (la tua posizione).
- * @param {number} radiusKm - Raggio dell'orizzonte in chilometri.
- * @param {number} [steps=360] - Numero di segmenti per la linea dell'orizzonte.
+ * Draw points of virtual horizon.
+ * @param {number} latitude latitude of observer in decimal degrees.
+ * @param {number} longitude longitude of observer in decimal degrees.
+ * @param {number} radiusKm radius of the horizon in kilometers (default 500km, which is about 20° at sea level).
+ * @param {number} [steps=360] number of points to generate along the horizon line (default 360, i.e. one point per degree).
  * @returns {object} Un oggetto GeoJSON MultiLineString che rappresenta l'orizzonte.
  */
 export function getVirtualHorizon(latitude, longitude, radiusKm = 500, steps = 360) {
@@ -122,14 +122,13 @@ export function getVirtualHorizon(latitude, longitude, radiusKm = 500, steps = 3
 
 
 /**
- * Calcola i punti per disegnare la linea dell'orizzonte virtuale
- * ad una data altezza.
- * @param {number} latitude - Latitudine dell'osservatore in gradi.
- * @param {number} longitude - Longitudine dell'osservatore in gradi.
- * @param {Date} date - Data e ora attuale.
- * @param {number} horizonAlt - Altezza dell'orizzonte virtuale in gradi.
- * @param {number} [steps=360] - Numero di segmenti per la linea dell'orizzonte.
- * @returns {object} Un oggetto GeoJSON MultiLineString che rappresenta l'orizzonte.
+ * calculate the virtual horizon line given observer's position, time and horizon height in degrees.
+ * @param {number} latitude - latitude of the observer in decimal degrees.
+ * @param {number} longitude - longitude of the observer in decimal degrees.
+ * @param {Date} date - current date and time, used to calculate the local sidereal time.
+ * @param {number} horizonAlt - height of the horizon in decimal degrees (default 0, i.e. true horizon; positive values for elevated horizons, negative for underground).
+ * @param {number} [steps=360] - number of points to generate along the horizon line (default 360, i.e. one point per degree).
+ * @returns {object} a GeoJSON FeatureCollection with a MultiLineString geometry representing the virtual horizon line, where each point has properties "n" (name) and "altitudine" (the horizon altitude in degrees).
  */
 export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAlt = 0, steps = 360) {
   const deg2rad = (deg) => deg * Math.PI / 180;
@@ -164,7 +163,7 @@ export function getVirtualHorizonByAltitude(latitude, longitude, date, horizonAl
     // Conversion in degrees
     const newLon = rad2deg(ra); // RA è la Longitudine nel sistema equatoriale
     const newLat = rad2deg(dec); // Dec è la Latitudine nel sistema equatoriale
-    coordinates.push([newLon.toFixed(2), newLat.toFixed(2)]);
+    coordinates.push([newLon, newLat]);
   }
 
   return {
@@ -191,12 +190,13 @@ function filterMPCFeatureCollection(features, lat, lon, date = new Date(), horiz
   const latRad = deg2rad(lat);
   const lonRad = deg2rad(lon);
 
-  function localSiderealTime(date, lon) {
+  function localSiderealTime(date, lonRad) {
     const JD = (date.getTime() / 86400000.0) + 2440587.5;
     const D = JD - 2451545.0;
-    let GMST = 280.46061837 + 360.98564736629 * D;
-    GMST = (GMST % 360 + 360) % 360;
-    return deg2rad(GMST) + lon;
+    // Greenwich Mean Sidereal Time (GMST)
+    let gmst = 280.46061837 + 360.98564736629 * D;
+    gmst = (gmst % 360 + 360) % 360;
+    return deg2rad(gmst) + lonRad;
   }
 
   const lst = localSiderealTime(date, lonRad);
@@ -206,26 +206,31 @@ function filterMPCFeatureCollection(features, lat, lon, date = new Date(), horiz
       const d = f?.properties?.itemData ?? {};
       if (!d["R.A."] || !d["Decl."]) return null;
 
-      const ra = deg2rad(d["R.A."]);   // RA in gradi
-      const dec = deg2rad(d["Decl."]); // Dec in gradi
+      // The MPC data provides R.A. in hours, not degrees.  The
+      // geometry stored elsewhere has already converted it using
+      // `hour2degree`.  When filtering we must do the same so that
+      // our altitude/azimuth math is sane.
+      const raHours = d["R.A."];
+      const ra = deg2rad(hour2degree(raHours));   // convert to degrees then radians
+      const dec = deg2rad(d["Decl."]); // Declination is already in degrees
 
-      // Angolo orario
+      // Hour angle
       let H = lst - ra;
       H = ((H + Math.PI) % (2 * Math.PI)) - Math.PI;
 
-      // Altezza
+      // Altitude
       const sinAlt = Math.sin(dec) * Math.sin(latRad) +
                      Math.cos(dec) * Math.cos(latRad) * Math.cos(H);
       const alt = Math.asin(sinAlt);
 
-      // Azimut
+      // Azimuth
       const y = -Math.sin(H);
       const x = Math.cos(dec) * Math.sin(latRad) -
                 Math.sin(dec) * Math.cos(latRad) * Math.cos(H);
       let az = Math.atan2(y, x);
       az = (az % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
-      // Clona la feature aggiungendo alt e az nelle properties
+      // clone the feature and add alt/az to properties
       return {
         ...f,
         properties: {
@@ -283,8 +288,7 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
 
   // horizon filter uses special geometry logic
   if (filter.horizon && filterData?.horizonData) {
-    const { position, time, activeHorizon, horizonHeight } = filterData;
-    if (activeHorizon) {
+    const { position, time, horizonHeight } = filterData;
       features = filterMPCFeatureCollection(
         features,
         position.latitude,
@@ -292,7 +296,6 @@ export function applyAsteroidsFilter(asteroids, filter, filterData) {
         time,
         horizonHeight
       );
-    }
   }
 
   // text match on Temp_Desig (case-insensitive substring)
@@ -513,6 +516,9 @@ export function parseEphemLine(line) {
     date: dateUtc,          // YYYY MM
     ra: `${parts[4]} ${parts[5]} ${parts[6]}`,    // "22 41 32.2"
     dec: `${parts[7]} ${parts[8]} ${parts[9]}`,   // "+01 51 58"
+    // ra in decimal degrees: (22 + 41/60 + 32.2/3600) * 15
+    radd: (parseFloat(parts[4]) + parseFloat(parts[5])/60 + parseFloat(parts[6])/3600) * 15,
+    decdd: parseFloat(parts[7]) + parseFloat(parts[8])/60 + parseFloat(parts[9])/3600, // in decimal degrees, with sign
     elong: parseFloat(parts[10]),     // es. 164.6
     v: parseFloat(parts[11]),         // es. 22.6
     motion: parseFloat(parts[12]),    // speed arcsecs/min
