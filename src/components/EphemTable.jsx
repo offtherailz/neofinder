@@ -18,11 +18,21 @@ export default function EphemTable({ephemerids}) {
     () => [
       {
         key: "date",
-        name: "Date",
+        name: "Date, Time (UTC)",
         resizable: true,
         sortable: true,
         filterable: true,
-        renderCell: ({ row }) => row.date.toLocaleString()
+        renderCell: ({ row }) => // UTC date formatting
+          new Date(row.date).toLocaleString("en-US", {
+            timeZone: "UTC",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+          })
       },
       { key: "ra", name: "R.A.", resizable: true, sortable: true, filterable: true },
       { key: "dec", name: "Dec", resizable: true, sortable: true, filterable: true },
