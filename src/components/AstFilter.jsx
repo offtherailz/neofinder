@@ -269,7 +269,7 @@ export default function AsteroidFilter({ filter, setFilter }) {
           </fieldset>
           <fieldset>
             <legend>Note</legend>
-            <div className="filter-group"></div>
+            <div className="filter-group checkbox-group">
                 <label>
                 S
                 <input
@@ -295,6 +295,18 @@ export default function AsteroidFilter({ filter, setFilter }) {
                 />
                 </label>
                 <label>
+                PCCP
+                <input
+                  type="checkbox"
+                  name="notePCCP"
+                  checked={filter.notePCCP ?? true}
+                  onChange={(e) => setFilter({
+                    ...filter,
+                    notePCCP: !(filter?.notePCCP ?? true)
+                  })}
+                />
+                </label>
+                <label>
                 No notes
                 <input
                   type="checkbox"
@@ -306,6 +318,7 @@ export default function AsteroidFilter({ filter, setFilter }) {
                   })}
                 />
                 </label>
+            </div>
           </fieldset>
 
           <div className="filter-buttons">

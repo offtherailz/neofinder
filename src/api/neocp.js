@@ -1,6 +1,5 @@
 import axios from "axios";
 import { hour2degree, parseEphemeridesHtml } from "../utils/utils";
-import { parseObsCodes } from "../utils/observatories";
 
 /**
  *
@@ -59,18 +58,52 @@ const neocpToGeoJSON = (json) => {
 // const NEOCP_URL='https://www.minorplanetcenter.net/Extended_Files/neocp.json';
 const REAL_SERVICES = {
     NEOCP_URL: "https://www.minorplanetcenter.net/Extended_Files/neocp.json",
+  PCCP_URL: "https://www.minorplanetcenter.net/iau/NEO/pccp.txt",
     OBS_URL: "https://data.minorplanetcenter.net/api/get-obs-neocp",
     OBS_CODES_URL: "https://minorplanetcenter.net/iau/lists/ObsCodes.html"
 }
 
 const API = REAL_SERVICES;
 
+const parsePccpDesignations = (text = "") => {
+  return new Set(
+    text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => line.split(/\s+/)[0])
+      .filter(Boolean)
+  );
+};
+
 
 export const fetchAsteroids = () => {
-  return fetch(API.NEOCP_URL)
-    .then(response => response.json())
-    .then(data => {
-      return {"type": "FeatureCollection", features: neocpToGeoJSON(data)};
+  return Promise.all([
+    fetch(API.NEOCP_URL).then(response => response.json()),
+    fetch(API.PCCP_URL)
+      .then(response => response.text())
+      .then(parsePccpDesignations)
+      .catch((error) => {
+        console.warn('Error fetching PCCP list:', error);
+        return new Set();
+      })
+  ])
+    .then(([data, pccpDesignations]) => {
+      const features = neocpToGeoJSON(data).map((feature) => {
+        const tempDesig = feature?.properties?.Temp_Desig;
+        if (tempDesig && pccpDesignations.has(tempDesig)) {
+          return {
+            ...feature,
+            properties: {
+              ...feature.properties,
+              Note: 'PCCP'
+            }
+          };
+        }
+        return feature;
+      });
+
+      return {"type": "FeatureCollection", features};
     })
     .catch(error => console.error('Error fetching asteroids:', error));
 }
@@ -117,7 +150,3 @@ export const fetchEphemerides = async (params) => {
   console.log("Ephemerides fetched:", eph);
   return  eph;
 };
-
-const fetchObservatories = () => {
-  fetch(API.OBS_CODES_URL)
-}

@@ -1,4 +1,14 @@
 /* compact grid layout for asteroid filter form */
+.filter-form {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  overflow-x: hidden;
+}
+
 .filter-form fieldset {
   border: none;
   margin: 0 0 1rem;
@@ -21,6 +31,22 @@
   display: flex;
   flex-direction: column;
   font-size: 0.9rem;
+}
+
+.checkbox-group {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.7rem 1.2rem;
+}
+
+.checkbox-group label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: normal;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
 }
 
 .filter-buttons {

@@ -37,7 +37,7 @@ function Modal({ open, onClose, children }) {
           background: "#fff",
           padding: "2rem",
           borderRadius: 8,
-          minWidth: 300,
+          minWidth: 600,
           minHeight: 100,
           position: "relative",
           boxShadow: "0 0 12px rgba(0,0,0,0.2)"
