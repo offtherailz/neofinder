@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/neofinder/static/css/main.bae0443b.css",
-    "main.js": "/neofinder/static/js/main.8155680b.js",
+    "main.css": "/neofinder/static/css/main.a25b57c5.css",
+    "main.js": "/neofinder/static/js/main.531f578b.js",
     "static/js/453.c0f977ac.chunk.js": "/neofinder/static/js/453.c0f977ac.chunk.js",
     "static/media/logo192.png": "/neofinder/static/media/logo192.03a095978a31c23d4f81.png",
     "index.html": "/neofinder/index.html",
-    "main.bae0443b.css.map": "/neofinder/static/css/main.bae0443b.css.map",
-    "main.8155680b.js.map": "/neofinder/static/js/main.8155680b.js.map",
+    "main.a25b57c5.css.map": "/neofinder/static/css/main.a25b57c5.css.map",
+    "main.531f578b.js.map": "/neofinder/static/js/main.531f578b.js.map",
     "453.c0f977ac.chunk.js.map": "/neofinder/static/js/453.c0f977ac.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.bae0443b.css",
-    "static/js/main.8155680b.js"
+    "static/css/main.a25b57c5.css",
+    "static/js/main.531f578b.js"
   ]
 }
