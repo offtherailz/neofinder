@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaFilter } from 'react-icons/fa';
+import { FaFilter, FaInfoCircle } from 'react-icons/fa';
 import Modal from './common/Modal';
 
 
@@ -137,7 +137,17 @@ export default function AsteroidFilter({ filter, setFilter }) {
           </fieldset>
 
           <fieldset>
-            <legend>Motion</legend>
+            <legend className="legend-with-info">
+              Motion
+              <button
+                type="button"
+                className="legend-info"
+                data-tooltip="The Motion filter applies only to objects whose ephemerides have already been downloaded."
+                aria-label="The Motion filter applies only to objects with downloaded ephemerides"
+              >
+                <FaInfoCircle />
+              </button>
+            </legend>
             <div className="filter-group">
               <label>
                 Speed Min
