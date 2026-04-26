@@ -282,6 +282,14 @@ export default function AsteroidFilter({ filter, setFilter }) {
             <div className="filter-group checkbox-group">
                 <label>
                 S
+                <button
+                  type="button"
+                  className="legend-info legend-info-native"
+                  title={'Objects flagged with an "S" in the Note column are possibly in geocentric orbit and might soon be removed.'}
+                  aria-label="Info about S note flag"
+                >
+                  <FaInfoCircle />
+                </button>
                 <input
                   type="checkbox"
                   name="noteS"
@@ -294,6 +302,14 @@ export default function AsteroidFilter({ filter, setFilter }) {
                 </label>
                 <label>
                 B
+                <button
+                  type="button"
+                  className="legend-info legend-info-native"
+                  title={'Objects flagged with a "B" in the Note column have a possible bad tracklet or failed orbit fit and the ephemeris might not be correct. "B" flag does not overwrite the "S" flag.'}
+                  aria-label="Info about B note flag"
+                >
+                  <FaInfoCircle />
+                </button>
                 <input
                   type="checkbox"
                   name="noteB"
@@ -306,6 +322,14 @@ export default function AsteroidFilter({ filter, setFilter }) {
                 </label>
                 <label>
                 PCCP
+                <button
+                  type="button"
+                  className="legend-info legend-info-native"
+                  title="The object has been moved to pccp"
+                  aria-label="Info about PCCP note flag"
+                >
+                  <FaInfoCircle />
+                </button>
                 <input
                   type="checkbox"
                   name="notePCCP"

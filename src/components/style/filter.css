@@ -5,7 +5,6 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.5rem;
-  overflow-x: hidden;
 }
 
 .filter-form fieldset {
@@ -52,6 +51,7 @@
   white-space: normal;
   width: max-content;
   max-width: 280px;
+  overflow-wrap: anywhere;
   z-index: 10;
   opacity: 0;
   pointer-events: none;
@@ -61,6 +61,25 @@
 .legend-info:hover::after,
 .legend-info:focus-visible::after {
   opacity: 1;
+}
+
+.note-tooltip::after {
+  max-width: min(360px, calc(100vw - 5rem));
+}
+
+.note-tooltip-left::after {
+  left: 0;
+  transform: none;
+}
+
+.note-tooltip-right::after {
+  left: auto !important;
+  right: 0 !important;
+  transform: none !important;
+}
+
+.legend-info-native::after {
+  display: none;
 }
 
 .filter-group {
