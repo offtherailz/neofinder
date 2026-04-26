@@ -7,10 +7,12 @@ export const CONFIG_KEYS = {
     SHOW_ASTEROIDS: 'showAsteroids',
     FILTER: 'filter',
     EPHEM_PARAMS: 'ephemParams',
-    CAMERA_SAMPLING: 'cameraSampling'
+    CAMERA_SAMPLING: 'cameraSampling',
+    MAX_OFFSET_ARCSEC: 'maxOffsetArcsec'
 };
 
 export const DEFAULT_CAMERA_SAMPLING = 1.055;
+export const DEFAULT_MAX_OFFSET_ARCSEC = 10;
 
 export const DEFAULT_EPHEM_PARAMS = {
     W: "j",

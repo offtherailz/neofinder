@@ -517,6 +517,12 @@ export function parseEphemLine(line) {
   const dateString = `${year}-${month}-${day}T${hour}:${min}:00Z`;
   const dateUtc = new Date(dateString);
 
+  // Extract Map and Offsets hrefs from <a href="...">Map</a>/<a href="...">Offsets</a>
+  const hrefs = [...line.matchAll(/<a href="([^"]+)"/g)].map(m => m[1]);
+  const toAbsolute = href => href.startsWith('http') ? href : `https://www.minorplanetcenter.net${href}`;
+  const mapUrl = hrefs[0] ? toAbsolute(hrefs[0]) : null;
+  const offsetsUrl = hrefs[1] ? toAbsolute(hrefs[1]) : (hrefs[0] ? toAbsolute(hrefs[0]) : null);
+
   return {
     date: dateUtc,          // YYYY MM
     ra: `${parts[4]} ${parts[5]} ${parts[6]}`,    // "22 41 32.2"
@@ -527,7 +533,9 @@ export function parseEphemLine(line) {
     elong: parseFloat(parts[10]),     // es. 164.6
     v: parseFloat(parts[11]),         // es. 22.6
     motion: parseFloat(parts[12]),    // speed arcsecs/min
-    pa: parseFloat(parts[13])         // Position Angle, deg
+    pa: parseFloat(parts[13]),        // Position Angle, deg
+    mapUrl,
+    offsetsUrl
   };
 }
 
@@ -550,13 +558,13 @@ export function parseEphemeridesHtml(html) {
       .map(l => l.trim())
       .filter(l => l && !l.startsWith('Date') && !l.startsWith('h') && !l.startsWith('<a') && !l.startsWith('Motion') && !l.startsWith('Uncertainty'));
 
+    const suppressedCount = lines.filter(line => line?.indexOf("suppressed") > 0).length;
     const ephem = lines
       .filter(line => !(line?.indexOf("suppressed") > 0))
-      .map(line => {
-      return parseEphemLine(line)
-    });
+      .map(line => parseEphemLine(line))
+      .filter(Boolean);
 
-    results[obj] = { ephem, suppressed: html.indexOf("suppressed") > 0 };
+    results[obj] = { ephem, suppressedCount };
   }
   return results;
 }

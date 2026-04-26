@@ -1,0 +1,8 @@
+/* Highlight ephemerides rows whose offset exceeds the configured limit. */
+.rdg-row.ephem-row-over-offset .rdg-cell {
+  background-color: #ffe7e7;
+}
+
+.rdg-row.ephem-row-over-offset:hover .rdg-cell {
+  background-color: #ffd9d9;
+}

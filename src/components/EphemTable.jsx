@@ -38,6 +38,8 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
       { key: "elong", name: "Elong", resizable: true, sortable: true, filterable: true },
       { key: "v", name: "Vmag", resizable: true, sortable: true, filterable: true },
       { key: "motion", name: "Motion(/min) ", resizable: true, sortable: true, filterable: true },
+      { key: "pa", name: "P.A.", resizable: true, sortable: true, filterable: true },
+
       {
         key: "maxExposure",
         name: "Max Exp (s)",
@@ -53,7 +55,24 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
           return ((samplingValue * 60) / motionValue).toFixed(1);
         }
       },
-      { key: "pa", name: "P.A.", resizable: true, sortable: true, filterable: true }
+      {
+        key: "mapOffsets",
+        name: "Map/Offsets",
+        resizable: true,
+        sortable: false,
+        filterable: false,
+        renderCell: ({ row }) => (
+          <span>
+            {row.mapUrl
+              ? <a href={row.mapUrl} target="_blank" rel="noreferrer">Map</a>
+              : <span style={{color:'#aaa'}}>Map</span>}
+            {' / '}
+            {row.offsetsUrl
+              ? <a href={row.offsetsUrl} target="_blank" rel="noreferrer">Offsets</a>
+              : <span style={{color:'#aaa'}}>Offsets</span>}
+          </span>
+        )
+      }
     ],
     [cameraSampling]
   );
@@ -75,14 +94,21 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
     ...col
   }));
 
+  const suppressedCount = ephemerids?.suppressedCount ?? 0;
+
   return (
-    <div >
+    <div>
       <DataGrid
         className="rdg-light"
         columns={columnsWithFilters}
         rows={filteredRows}
         defaultColumnOptions={{ resizable: true, sortable: true }}
       />
+      {suppressedCount > 0 && (
+        <div style={{ marginTop: 4, padding: '4px 8px', background: '#fff3cd', color: '#856404', borderRadius: 4, fontSize: '0.85em' }}>
+          ⚠️ {suppressedCount} row{suppressedCount > 1 ? 's' : ''} with suppressed data (not shown)
+        </div>
+      )}
     </div>
   );
 }

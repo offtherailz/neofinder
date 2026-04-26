@@ -8,7 +8,7 @@ import Modal from './common/Modal';
 import EphemMPCForm from './EphForm';
 import Tabs from './common/Tabs';
 import { getSetting } from '../persistence';
-import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING } from '../constants';
+import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_MAX_OFFSET_ARCSEC } from '../constants';
 const MyPosition = ({
 
   position,
@@ -31,6 +31,8 @@ const MyPosition = ({
   setShowAsteroids = () => {},
   cameraSampling,
   setCameraSampling = () => {},
+  maxOffsetArcsec,
+  setMaxOffsetArcsec = () => {},
 }) => {
   const [, setError] = useState(null);
   const [collapsed, setCollapsed] = useState(true);
@@ -40,11 +42,20 @@ const MyPosition = ({
   const cameraSamplingValue = Number.isFinite(cameraSampling)
     ? cameraSampling
     : (Number.isFinite(savedCameraSampling) ? savedCameraSampling : DEFAULT_CAMERA_SAMPLING);
+  const savedMaxOffsetArcsec = getSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC);
+  const maxOffsetArcsecValue = Number.isFinite(maxOffsetArcsec)
+    ? maxOffsetArcsec
+    : (Number.isFinite(savedMaxOffsetArcsec) ? savedMaxOffsetArcsec : DEFAULT_MAX_OFFSET_ARCSEC);
   const [cameraSamplingInput, setCameraSamplingInput] = useState(String(cameraSamplingValue));
+  const [maxOffsetArcsecInput, setMaxOffsetArcsecInput] = useState(String(maxOffsetArcsecValue));
 
   useEffect(() => {
     setCameraSamplingInput(String(cameraSamplingValue));
   }, [cameraSamplingValue, showEphemParamsForm]);
+
+  useEffect(() => {
+    setMaxOffsetArcsecInput(String(maxOffsetArcsecValue));
+  }, [maxOffsetArcsecValue, showEphemParamsForm]);
 
   const commitCameraSampling = () => {
     const nextValue = parseFloat(cameraSamplingInput);
@@ -55,6 +66,17 @@ const MyPosition = ({
     }
     setCameraSampling(DEFAULT_CAMERA_SAMPLING);
     setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
+  };
+
+  const commitMaxOffsetArcsec = () => {
+    const nextValue = parseFloat(maxOffsetArcsecInput);
+    if (Number.isFinite(nextValue) && nextValue > 0) {
+      setMaxOffsetArcsec(nextValue);
+      setMaxOffsetArcsecInput(String(nextValue));
+      return;
+    }
+    setMaxOffsetArcsec(DEFAULT_MAX_OFFSET_ARCSEC);
+    setMaxOffsetArcsecInput(String(DEFAULT_MAX_OFFSET_ARCSEC));
   };
 
   const getMyPosition = () => {
@@ -230,15 +252,38 @@ const MyPosition = ({
                         className="form-input"
                       />
                     </label>
+                    <label className="form-label" title="Maximum acceptable offset uncertainty in arcseconds">
+                      Max offset (")
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={maxOffsetArcsecInput}
+                        onChange={(e) => setMaxOffsetArcsecInput(e.target.value)}
+                        onBlur={commitMaxOffsetArcsec}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitMaxOffsetArcsec();
+                          }
+                        }}
+                        className="form-input"
+                      />
+                    </label>
                   </form>
                   <div style={{ marginTop: '0.75rem' }}>
                     Max exposure formula used in ephemerides: (sampling * 60) / motion, with motion in arcsec/min
                   </div>
+                  <div style={{ marginTop: '0.35rem' }}>
+                    Offset warning threshold: objects with offset above this value are flagged in the ephemerides panel.
+                  </div>
                   <button style={{ marginTop: '0.75rem' }} onClick={() => {
                     setCameraSampling(DEFAULT_CAMERA_SAMPLING);
                     setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
+                    setMaxOffsetArcsec(DEFAULT_MAX_OFFSET_ARCSEC);
+                    setMaxOffsetArcsecInput(String(DEFAULT_MAX_OFFSET_ARCSEC));
                   }}>
-                    Reset Camera Sampling
+                    Reset Camera Settings
                   </button>
                 </div>
               )

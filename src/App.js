@@ -6,8 +6,7 @@ import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter } from 
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
-import { CONFIG_KEYS, DEFAULT_EPHEM_PARAMS } from './constants';
-import Details from './components/Details';
+import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_EPHEM_PARAMS, DEFAULT_MAX_OFFSET_ARCSEC } from './constants';
 import Sidebar from './components/common/SideBar';
 import EphemTable from './components/EphemTable';
 import logo from './logo192.png';
@@ -47,6 +46,12 @@ function App() {
   const [ephemerids, setEphemerids] = useState({});
   const [ephemParams, setEphemParam] = useState(() => {
     return getSetting(CONFIG_KEYS.EPHEM_PARAMS) ?? DEFAULT_EPHEM_PARAMS; // TODO: set form data
+  });
+  const [cameraSampling, setCameraSampling] = useState(() => {
+    return getSetting(CONFIG_KEYS.CAMERA_SAMPLING) ?? DEFAULT_CAMERA_SAMPLING;
+  });
+  const [maxOffsetArcsec, setMaxOffsetArcsec] = useState(() => {
+    return getSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC) ?? DEFAULT_MAX_OFFSET_ARCSEC;
   });
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
@@ -188,6 +193,8 @@ function App() {
     saveSetting(CONFIG_KEYS.SHOW_ASTEROIDS, showAsteroids);
     saveSetting(CONFIG_KEYS.FILTER, filter);
     saveSetting(CONFIG_KEYS.EPHEM_PARAMS, ephemParams);
+    saveSetting(CONFIG_KEYS.CAMERA_SAMPLING, cameraSampling);
+    saveSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC, maxOffsetArcsec);
     console.log("Settings saved");
 
   };
@@ -215,7 +222,7 @@ function App() {
           setActiveHorizon={setActiveHorizon}
           activeHorizon={activeHorizon}
           horizonData={horizonData}
-          saveSettings={saveSettings()}
+          saveSettings={saveSettings}
           horizonHeight={horizonHeight}
           setHorizonHeight={setHorizonHeight}
           time={time}
@@ -228,6 +235,10 @@ function App() {
           setShowAsteroids={setShowAsteroids}
           ephemParams={ephemParams}
           setEphemParam={setEphemParam}
+          cameraSampling={cameraSampling}
+          setCameraSampling={setCameraSampling}
+          maxOffsetArcsec={maxOffsetArcsec}
+          setMaxOffsetArcsec={setMaxOffsetArcsec}
         /></div>
       <main>
         <SkyMap data={data}
@@ -266,12 +277,14 @@ function App() {
         isOpen={showEphemName}
         setIsOpen={setShowEphemName}
         position="right"
-        width={700}
+        width={900}
         >
 
           <EphemTable
             height="100%"
             ephemerids={ephemerids?.[showEphemName]}
+            cameraSampling={cameraSampling}
+            maxOffsetArcsec={maxOffsetArcsec}
             />
         </Sidebar>
     </div>
