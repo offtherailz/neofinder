@@ -6,8 +6,11 @@ export const CONFIG_KEYS = {
     REFRESH_TIME: 'refreshTime',
     SHOW_ASTEROIDS: 'showAsteroids',
     FILTER: 'filter',
-    EPHEM_PARAMS: 'ephemParams'
+    EPHEM_PARAMS: 'ephemParams',
+    CAMERA_SAMPLING: 'cameraSampling'
 };
+
+export const DEFAULT_CAMERA_SAMPLING = 1.055;
 
 export const DEFAULT_EPHEM_PARAMS = {
     W: "j",

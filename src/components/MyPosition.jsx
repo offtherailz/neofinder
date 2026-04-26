@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { FaMapMarkerAlt, FaUndo, FaSave, FaPlay, FaWpforms, FaPause } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { FaMapMarkerAlt, FaSave, FaPlay, FaWpforms, FaPause } from 'react-icons/fa';
 import { GiHorizonRoad } from "react-icons/gi";
 import { GiAsteroid } from "react-icons/gi";
 import UTCDateTimePicker from './UTCDateTimePicker';
 import './style/position.css';
 import Modal from './common/Modal';
 import EphemMPCForm from './EphForm';
+import Tabs from './common/Tabs';
+import { getSetting } from '../persistence';
+import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING } from '../constants';
 const MyPosition = ({
 
   position,
@@ -26,11 +29,33 @@ const MyPosition = ({
   setRefreshTime,
   showAsteroids = false,
   setShowAsteroids = () => {},
+  cameraSampling,
+  setCameraSampling = () => {},
 }) => {
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
+  const savedCameraSampling = getSetting(CONFIG_KEYS.CAMERA_SAMPLING);
+  const cameraSamplingValue = Number.isFinite(cameraSampling)
+    ? cameraSampling
+    : (Number.isFinite(savedCameraSampling) ? savedCameraSampling : DEFAULT_CAMERA_SAMPLING);
+  const [cameraSamplingInput, setCameraSamplingInput] = useState(String(cameraSamplingValue));
+
+  useEffect(() => {
+    setCameraSamplingInput(String(cameraSamplingValue));
+  }, [cameraSamplingValue, showEphemParamsForm]);
+
+  const commitCameraSampling = () => {
+    const nextValue = parseFloat(cameraSamplingInput);
+    if (Number.isFinite(nextValue) && nextValue > 0) {
+      setCameraSampling(nextValue);
+      setCameraSamplingInput(String(nextValue));
+      return;
+    }
+    setCameraSampling(DEFAULT_CAMERA_SAMPLING);
+    setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
+  };
 
   const getMyPosition = () => {
     if (!navigator.geolocation) {
@@ -170,9 +195,55 @@ const MyPosition = ({
     </div>
     {
       <Modal open={showEphemParamsForm} onClose={() => {setShowEphemParamsForm(false)}}>
-        <EphemMPCForm
-          params={ephemParams}
-          setParams={setEphemParam}
+        <Tabs
+          tabs={[
+            {
+              label: 'MPC Params',
+              content: (
+                <EphemMPCForm
+                  params={ephemParams}
+                  setParams={setEphemParam}
+                />
+              )
+            },
+            {
+              label: 'Camera',
+              content: (
+                <div className="form-container">
+                  <h1 className="form-title">Camera Settings</h1>
+                  <form className="form-grid">
+                    <label className="form-label" title="Camera sampling in arcsec/pixel">
+                      Cam (arcsec/px)
+                      <input
+                        type="number"
+                        step="0.001"
+                        min="0"
+                        value={cameraSamplingInput}
+                        onChange={(e) => setCameraSamplingInput(e.target.value)}
+                        onBlur={commitCameraSampling}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitCameraSampling();
+                          }
+                        }}
+                        className="form-input"
+                      />
+                    </label>
+                  </form>
+                  <div style={{ marginTop: '0.75rem' }}>
+                    Max exposure formula used in ephemerides: (sampling * 60) / motion, with motion in arcsec/min
+                  </div>
+                  <button style={{ marginTop: '0.75rem' }} onClick={() => {
+                    setCameraSampling(DEFAULT_CAMERA_SAMPLING);
+                    setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
+                  }}>
+                    Reset Camera Sampling
+                  </button>
+                </div>
+              )
+            }
+          ]}
         />
       </Modal>
     }

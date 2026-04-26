@@ -8,9 +8,8 @@ import "react-data-grid/lib/styles.css";
  * @param {ephemerids[]} array of ephemerids
  * @returns
  */
-export default function EphemTable({ephemerids}) {
-  const rows = ephemerids?.ephem ?? [];
-  const [filters, setFilters] = useState({});
+export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
+  const [filters] = useState({});
 
 
   // Define columns
@@ -39,20 +38,36 @@ export default function EphemTable({ephemerids}) {
       { key: "elong", name: "Elong", resizable: true, sortable: true, filterable: true },
       { key: "v", name: "Vmag", resizable: true, sortable: true, filterable: true },
       { key: "motion", name: "Motion(/min) ", resizable: true, sortable: true, filterable: true },
+      {
+        key: "maxExposure",
+        name: "Max Exp (s)",
+        resizable: true,
+        sortable: true,
+        filterable: true,
+        renderCell: ({ row }) => {
+          const motionValue = Number(row.motion);
+          const samplingValue = Number(cameraSampling);
+          if (!Number.isFinite(motionValue) || !Number.isFinite(samplingValue) || motionValue <= 0 || samplingValue <= 0) {
+            return "n/a";
+          }
+          return ((samplingValue * 60) / motionValue).toFixed(1);
+        }
+      },
       { key: "pa", name: "P.A.", resizable: true, sortable: true, filterable: true }
     ],
-    []
+    [cameraSampling]
   );
 
   // Filtering logic
   const filteredRows = useMemo(() => {
+    const rows = ephemerids?.ephem ?? [];
     return rows.filter((row) => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
         return String(row[key]).toLowerCase().includes(String(value).toLowerCase());
       });
     });
-  }, [rows, filters]);
+  }, [ephemerids, filters]);
 
 
   // Enhance columns with filter renderer

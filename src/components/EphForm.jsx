@@ -43,7 +43,6 @@ export default function EphemMPCForm({ params, setParams }) {
 
   return (
     <div className="form-container">
-      <h1 className="form-title">MPC Params Form</h1>
       <form className="form-grid">
         <label className="form-label" title="Object selection: all or selected only">
           W (object selection)
