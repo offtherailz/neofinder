@@ -6,3 +6,12 @@
 .rdg-row.ephem-row-over-offset:hover .rdg-cell {
   background-color: #ffd9d9;
 }
+
+/* Highlight the selected ephemeris row */
+.rdg-row.ephem-row-selected .rdg-cell {
+  background-color: #e3f2fd;
+}
+
+.rdg-row.ephem-row-selected:hover .rdg-cell {
+  background-color: #bbdefb;
+}

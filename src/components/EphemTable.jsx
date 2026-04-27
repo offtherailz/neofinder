@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import DataGrid from "./common/AutoHeightDataGrid";
+import AladinView from "./AladinView";
 import "react-data-grid/lib/styles.css";
 
 
@@ -10,6 +11,7 @@ import "react-data-grid/lib/styles.css";
  */
 export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
   const [filters] = useState({});
+  const [selectedRowIdx, setSelectedRowIdx] = useState(null);
 
 
   // Define columns
@@ -96,6 +98,12 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
 
   const suppressedCount = ephemerids?.suppressedCount ?? 0;
 
+  const handleCellClick = useCallback(({ rowIdx }) => {
+    setSelectedRowIdx(prev => (prev === rowIdx ? null : rowIdx));
+  }, []);
+
+  const selectedRow = selectedRowIdx != null ? filteredRows[selectedRowIdx] ?? null : null;
+
   return (
     <div>
       <DataGrid
@@ -103,12 +111,15 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
         columns={columnsWithFilters}
         rows={filteredRows}
         defaultColumnOptions={{ resizable: true, sortable: true }}
+        onCellClick={handleCellClick}
+        rowClass={(row, idx) => idx === selectedRowIdx ? 'ephem-row-selected' : undefined}
       />
       {suppressedCount > 0 && (
         <div style={{ marginTop: 4, padding: '4px 8px', background: '#fff3cd', color: '#856404', borderRadius: 4, fontSize: '0.85em' }}>
           ⚠️ {suppressedCount} row{suppressedCount > 1 ? 's' : ''} with suppressed data (not shown)
         </div>
       )}
+      <AladinView rows={filteredRows} selectedRow={selectedRow} />
     </div>
   );
 }
