@@ -47,6 +47,18 @@ function App() {
   const [ephemParams, setEphemParam] = useState(() => {
     return getSetting(CONFIG_KEYS.EPHEM_PARAMS) ?? DEFAULT_EPHEM_PARAMS; // TODO: set form data
   });
+  // When position changes, update ephemParams to use observer's real coordinates (Parallax=2)
+  useEffect(() => {
+    if (position?.latitude != null && position?.longitude != null) {
+      setEphemParam(prev => ({
+        ...prev,
+        Parallax: 2,
+        lat: position.latitude,
+        long: position.longitude,
+        alt: position.altitude ?? 0,
+      }));
+    }
+  }, [position]);
   const [cameraSampling, setCameraSampling] = useState(() => {
     return getSetting(CONFIG_KEYS.CAMERA_SAMPLING) ?? DEFAULT_CAMERA_SAMPLING;
   });

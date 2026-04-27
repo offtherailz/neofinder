@@ -79,9 +79,9 @@ export default function EphemMPCForm({ params, setParams }) {
           sort
           <input disabled type="text" name="sort" value={params.sort} onChange={handleChange} className="form-input" />
         </label>
-        <label disabled className="form-label" title="Parallax type: geocentric, observatory code or custom">
+        <label className="form-label" title="Parallax type: geocentric, observatory code or custom">
           Parallax
-          <select disabled name="Parallax" value={params.Parallax} onChange={handleChange} className="form-select">
+          <select name="Parallax" value={params.Parallax} onChange={handleChange} className="form-select">
             <option value={0}>Geocentric</option>
             <option value={1}>Observatory code</option>
             <option value={2}>Custom coordinates</option>
@@ -89,19 +89,19 @@ export default function EphemMPCForm({ params, setParams }) {
         </label>
         <label className="form-label" title="Observatory code (if Parallax = 1)">
           obscode
-          <input type="text" name="obscode" value={params.obscode} onChange={handleChange} className="form-input" />
+          <input type="text" name="obscode" value={params.obscode} onChange={handleChange} className="form-input" disabled={params.Parallax !== 1} />
         </label>
-        <label disabled className="form-label" title="Longitude in degrees (if Parallax = 2)">
+        <label className="form-label" title="Longitude in degrees (if Parallax = 2)">
           long
-          <input disabled type="text" name="long" value={params.long} onChange={handleChange} className="form-input" />
+          <input type="text" name="long" value={params.long} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
         </label>
         <label className="form-label" title="Latitude in degrees (if Parallax = 2)">
           lat
-          <input disabled type="text" name="lat" value={params.lat} onChange={handleChange} className="form-input" />
+          <input type="text" name="lat" value={params.lat} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
         </label>
         <label className="form-label" title="Altitude in meters (if Parallax = 2)">
           alt
-          <input disabled type="number" name="alt" value={params.alt} onChange={handleChange} className="form-input" />
+          <input type="number" name="alt" value={params.alt} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
         </label>
         <label className="form-label" title="Ephemeris interval">
           int (interval)
