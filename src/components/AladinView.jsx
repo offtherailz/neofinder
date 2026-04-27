@@ -121,14 +121,14 @@ export default function AladinView({ rows = [], selectedRow = null }) {
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 6, flexWrap: 'wrap' }}>
-        <strong style={{ fontSize: '0.95em' }}>Campo di cielo (Aladin)</strong>
+        <strong style={{ fontSize: '0.95em' }}>Sky field (Aladin)</strong>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.9em', userSelect: 'none' }}>
           <input
             type="checkbox"
             checked={showTrail}
             onChange={e => setShowTrail(e.target.checked)}
           />
-          Mostra scia
+          Show trajectory
         </label>
         {(selectedRow ?? rows[0]) && (
           <span style={{ fontSize: '0.82em', color: '#555' }}>

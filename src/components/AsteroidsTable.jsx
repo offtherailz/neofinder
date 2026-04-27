@@ -34,7 +34,7 @@ export function NeocpAsteroidsTable({
   const buttonsColumn = useMemo(() => ({
     key: 'actions',
     name: 'Actions',
-    renderCell: ({ row }) => (<button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} onClick={(evt, data) => {
+    renderCell: ({ row }) => (<button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} disabled={!!(loading || loadingAsteroids)} onClick={(evt, data) => {
           fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig })
             .then(newEphemerides => {
               setEphemerids((ee) => ({
@@ -50,7 +50,7 @@ export function NeocpAsteroidsTable({
         <GiMoonOrbit title="Get ephemerides" />
       </button>),
     width: 100,
-  }), [ephemParams, ephemerids, setEphemerids]);
+  }), [ephemParams, ephemerids, setEphemerids, loading, loadingAsteroids]);
 
   const columns = [
     SelectColumn,
@@ -204,8 +204,8 @@ export function NeocpAsteroidsTable({
      <div>
       <div className="controls">
         <div>
-          <button title="refresh the list of asteroids" onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
-          <button title="Fetch ephemerides for all the objects in the table" onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides</button>
+          <button title="refresh the list of asteroids" disabled={!!(loading || loadingAsteroids)} onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
+          <button title="Fetch ephemerides for all the objects in the table" disabled={!!(loading || loadingAsteroids)} onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides</button>
           <AsteroidFilter
             filter={filter}
             setFilter={setFilter}
