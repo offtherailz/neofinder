@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
-import SkyMap from './components/SkyMap';
+import AladinMainMap from './components/AladinMainMap';
 import MyPosition from './components/MyPosition';
-import { applyAsteroidsFilter, getVirtualHorizonByAltitude, skyMapCenter } from './utils/utils';
+import { applyAsteroidsFilter, getVirtualHorizonByAltitude } from './utils/utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
@@ -101,82 +101,6 @@ function App() {
     return applyAsteroidsFilter(asteroids, filter, filterData);
   }, [asteroids, filter, filterData]);
   const [showEphemName, setShowEphemName] = useState();
-  const ephemOnMap = useMemo(() => {
-    if (!ephemerids || !filteredAsteroids) return null;
-    const features = [];
-    for (const [name, obj] of Object.entries(ephemerids)) {
-      const asteroid = filteredAsteroids.features.find(f => f.properties.name === name);
-      if (asteroid) {
-        // add all ephem points as a line feature, with name as property
-        features.push({
-          type: "Feature",
-          geometry: {
-            type: "MultiLineString",
-            coordinates:
-            // "10 08 53.4" "-02 13 39"
-              [obj.ephem.map(e => {
-                const raParts = e.ra.split(" ").map(parseFloat);
-                const decParts = e.dec.split(" ").map(parseFloat);
-                return [
-                  (raParts[0] + raParts[1]/60 + raParts[2]/3600) * 15, // in degrees
-                  decParts[0] + decParts[1]/60 + decParts[2]/3600 // in degrees
-                ];
-              })]
-          },
-          properties: {
-            name
-          }
-        });
-      }
-    }
-    return {
-      type: "FeatureCollection",
-      features
-    };
-  }, [ephemerids, filteredAsteroids]);
-  const data = useMemo(() => {
-    const selectedEphems = Object.keys(ephemerids).filter(name => selectedAsteroids.has(name));
-    return [
-      ...(horizonData && activeHorizon ? [{
-        geoJSON: horizonData,
-        category: "horizon"
-      }] : []),
-      ...(asteroids && filteredAsteroids && showAsteroids ? [{
-        geoJSON: filteredAsteroids,
-        category: "asteroids"
-      }] : []),
-      ...(selectedAsteroids.size > 0 && asteroids?.features ? [{
-        geoJSON: {
-          type: "FeatureCollection",
-          features: asteroids.features.filter(f => selectedAsteroids.has(f.properties.name))
-        },
-        category: "selected"
-      }] : []),
-      ...(ephemOnMap ? [{
-        geoJSON: ephemOnMap,
-        category: "ephemerids"
-      }] : []),
-      ...((selectedEphems.length > 0 && ephemOnMap?.features) ? [{
-        geoJSON: {
-          type: "FeatureCollection",
-          features: ephemOnMap.features.filter(f => selectedEphems.includes(f.properties.name))
-        },
-        category: "selectedEphem"
-      }] : [])
-
-    ];
-  }, [filteredAsteroids, activeHorizon, horizonData, asteroids, selectedAsteroids, showAsteroids, ephemOnMap, ephemerids]);
-
-  const configOverrides = useMemo(() => {
-
-    if(position) {
-      const center = skyMapCenter(position?.latitude, position?.longitude, time ?? new Date())
-      return {
-        center: center
-      };
-    }
-    return {}
-  }, [position, time]);
 
   const saveSettings = () => {
     if (position) {
@@ -206,10 +130,7 @@ function App() {
             className="App-logo"
             alt="logo"
           />
-        <h1>
-
-          NEO Finder
-          </h1>
+        <h1><span className="neo">NEO</span> Finder</h1>
 
 
 
@@ -241,12 +162,17 @@ function App() {
           setMaxOffsetArcsec={setMaxOffsetArcsec}
         /></div>
       <main>
-        <SkyMap data={data}
-        // geopos={position ? [position.latitude, position.longitude] : undefined}
-        configOverrides={configOverrides} />
-
-
-      <NeocpAsteroidsTable
+        <div className="app-map-wrapper">
+          <AladinMainMap
+            filteredAsteroids={filteredAsteroids}
+            selectedAsteroids={selectedAsteroids}
+            ephemerids={ephemerids}
+            position={position}
+            time={time}
+          />
+        </div>
+        <div className="app-table-wrapper">
+        <NeocpAsteroidsTable
         openEphemerides={name =>
           setShowEphemName(name)
 
@@ -266,6 +192,7 @@ function App() {
           filter={filter}
           setFilter={setFilter}
         />
+        </div>
       </main>
       <footer>
         <i>This research has made use of data and/or services provided by the International Astronomical Union's <a href="https://www.minorplanetcenter.net/">Minor Planet Center.</a></i><br />

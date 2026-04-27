@@ -12,39 +12,69 @@ body {
   flex-direction: column;
 }
 .App-header {
-  height: 100px;
   z-index: 100;
-  margin: 10px;
-  margin-right: 200px;
   display: flex;
   flex-direction: row;
   justify-content: start;
-  font-size: 1.5em;
-  display: flex;
-  margin: 10px;
-  align-items: top;
-  font-style: italic;
+  font-size: 10px;
+  padding: 0 20px;
+  align-items: center;
+  flex-shrink: 0;
+  height: 100px;
+  background: linear-gradient(90deg, #0a0a1a 0%, #1a1a3a 100%);
+  border-bottom: 1px solid #2a2a5a;
 }
 .App-header img {
-  height: 120px;
-  margin-right: 10px;
+  height: 100px;
+  width: 100px;
+  margin-right: 16px;
+  filter: drop-shadow(0 0 6px #7eb8ff);
+}
+.App-header h1 {
+  font-size: 5.2em;
+  margin: 0;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8f4ff;
+  text-shadow: 0 0 10px #4a9eff, 0 0 20px #1a5eff55;
+}
+.App-header h1 span.neo {
+  color: #ff7043;
+  text-shadow: 0 0 10px #ff4400, 0 0 20px #ff440055;
 }
 
 .App main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  overflow: hidden;
+  min-height: 0;
+  padding: 0;
+}
+.app-map-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.app-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 #NeocpAsteroidsTable {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 .position-controls {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 5px;
+  right: 35px;
   z-index: 100;
   margin: 10px;
 }

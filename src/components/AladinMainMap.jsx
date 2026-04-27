@@ -122,27 +122,22 @@ export default function AladinMainMap({
       );
     }
 
-    // --- Ephemeris trails ---
-    const ephemNames = Object.keys(ephemerids);
-    if (ephemNames.length > 0) {
-      ephemNames.forEach(name => {
+    // --- Ephemeris trails (only for selected asteroids) ---
+    if (selectedAsteroids.size > 0) {
+      selectedAsteroids.forEach(name => {
         const obj = ephemerids[name];
         const pts = (obj?.ephem ?? []).filter(e => Number.isFinite(e.radd) && Number.isFinite(e.decdd));
         if (pts.length < 2) return;
 
-        const isSelected = selectedAsteroids.has(name);
-        const color = isSelected ? '#2196f3' : '#4caf50';
-        const lineWidth = isSelected ? 3 : 1.5;
-
-        const overlay = A.graphicOverlay({ color, lineWidth });
+        const overlay = A.graphicOverlay({ color: '#2196f3', lineWidth: 3 });
         aladin.addOverlay(overlay);
-        overlay.add(A.polyline(pts.map(e => [e.radd, e.decdd]), { color }));
+        overlay.add(A.polyline(pts.map(e => [e.radd, e.decdd]), { color: '#2196f3' }));
       });
     }
   }, [ready, filteredAsteroids, selectedAsteroids, ephemerids]);
 
   return (
-    <div style={{ width: '100%', height: 500, position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <div id="aladin-main-map" style={{ width: '100%', height: '100%' }} />
     </div>
   );

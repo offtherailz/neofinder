@@ -1,35 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-const ALADIN_CSS = 'https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css';
-const ALADIN_JS = 'https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js';
-
-function loadAladinScript() {
-  return new Promise((resolve, reject) => {
-    if (window.A) {
-      resolve(window.A);
-      return;
-    }
-    if (!document.querySelector(`link[href="${ALADIN_CSS}"]`)) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = ALADIN_CSS;
-      document.head.appendChild(link);
-    }
-    const existing = document.querySelector(`script[src="${ALADIN_JS}"]`);
-    if (existing) {
-      const check = setInterval(() => {
-        if (window.A) { clearInterval(check); resolve(window.A); }
-      }, 100);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = ALADIN_JS;
-    script.type = 'text/javascript';
-    script.onload = () => resolve(window.A);
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
+import { loadAladinScript } from '../utils/aladin';
 
 /**
  * Shows an Aladin Lite sky view centered on the selected ephemeris position.
@@ -53,7 +23,7 @@ export default function AladinView({ rows = [], selectedRow = null }) {
         const centerRow = selectedRow ?? rows[0];
         const ra = centerRow?.radd ?? 0;
         const dec = centerRow?.decdd ?? 0;
-        const aladin = await A.aladin(`#${divId.current}`, {
+        const aladin = A.aladin(`#${divId.current}`, {
           target: `${ra} ${dec}`,
           cooFrame: 'ICRSd',
           survey: 'P/DSS2/color',

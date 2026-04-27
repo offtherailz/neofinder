@@ -50,7 +50,7 @@ export function NeocpAsteroidsTable({
         <GiMoonOrbit title="Get ephemerides" />
       </button>),
     width: 100,
-  }), [ephemParams, ephemerids, setEphemerids, loading, loadingAsteroids]);
+  }), [ephemParams, ephemerids, setEphemerids, loading, loadingAsteroids, openEphemerides]);
 
   const columns = [
     SelectColumn,
