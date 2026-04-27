@@ -15,10 +15,11 @@ export default function AutoHeightDataGrid({ ...props}) {
   const { height } = useResizeObserver(containerRef);
 
   return (
+    <div ref={containerRef} style={{ height: '100%', minHeight: 0 }}>
       <DataGrid
         {...props}
-        height={height ? height : props.height} // Fallback to provided height if resize observer fails
-        style={{ height: height ? height : props.height }} // Subtracting 2px for borders/margins
+        style={{ height: height ?? 300 }}
       />
+    </div>
   );
 }

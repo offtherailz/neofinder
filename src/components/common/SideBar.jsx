@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './SideBar.css';
 
 const Sidebar = ({width = 700, position="left", isOpen, setIsOpen,children, title}) => {
@@ -27,7 +27,7 @@ const Sidebar = ({width = 700, position="left", isOpen, setIsOpen,children, titl
           {title && <h2 style={{padding: '1rem', margin: 0, borderBottom: '1px solid #ccc'}}>{title}</h2>}
         </div>
 
-        <div className="sidebar-content" style={{ overflowY: 'auto', flex: 1}}>
+        <div className="sidebar-content" style={{ overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
          {children}
         </div>
       </div>)}

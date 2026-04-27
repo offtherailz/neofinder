@@ -19,6 +19,14 @@ export default function AladinView({ rows = [], selectedRow = null }) {
       try {
         await loadAladinScript();
         if (cancelled) return;
+        const el = document.getElementById(divId.current);
+        if (!el) return;
+        // Wait until container has non-zero height (flex layout may not be settled yet)
+        await new Promise(resolve => {
+          const check = () => el.clientHeight > 0 ? resolve() : requestAnimationFrame(check);
+          check();
+        });
+        if (cancelled) return;
         const A = window.A;
         const centerRow = selectedRow ?? rows[0];
         const ra = centerRow?.radd ?? 0;
@@ -89,8 +97,8 @@ export default function AladinView({ rows = [], selectedRow = null }) {
   if (rows.length === 0) return null;
 
   return (
-    <div style={{ marginTop: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 6, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '4px 0', flexWrap: 'wrap', flexShrink: 0 }}>
         <strong style={{ fontSize: '0.95em' }}>Sky field (Aladin)</strong>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.9em', userSelect: 'none' }}>
           <input
@@ -106,7 +114,7 @@ export default function AladinView({ rows = [], selectedRow = null }) {
           </span>
         )}
       </div>
-      <div id={divId.current} style={{ width: '100%', height: 420 }} />
+      <div id={divId.current} style={{ width: '100%', flex: 1, minHeight: 0 }} />
     </div>
   );
 }

@@ -104,22 +104,34 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
 
   const selectedRow = selectedRowIdx != null ? filteredRows[selectedRowIdx] ?? null : null;
 
+  const WARNING_H = 32; // reserved px when warning is visible
+
   return (
-    <div>
-      <DataGrid
-        className="rdg-light"
-        columns={columnsWithFilters}
-        rows={filteredRows}
-        defaultColumnOptions={{ resizable: true, sortable: true }}
-        onCellClick={handleCellClick}
-        rowClass={(row, idx) => idx === selectedRowIdx ? 'ephem-row-selected' : undefined}
-      />
-      {suppressedCount > 0 && (
-        <div style={{ marginTop: 4, padding: '4px 8px', background: '#fff3cd', color: '#856404', borderRadius: 4, fontSize: '0.85em' }}>
-          ⚠️ {suppressedCount} row{suppressedCount > 1 ? 's' : ''} with suppressed data (not shown)
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      {/* Top half: table + warning banner */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 6 }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <DataGrid
+            className="rdg-light"
+            columns={columnsWithFilters}
+            rows={filteredRows}
+            defaultColumnOptions={{ resizable: true, sortable: true }}
+            onCellClick={handleCellClick}
+            rowClass={(row, idx) => idx === selectedRowIdx ? 'ephem-row-selected' : undefined}
+          />
         </div>
-      )}
-      <AladinView rows={filteredRows} selectedRow={selectedRow} />
+        <div style={{ flexShrink: 0, height: WARNING_H, display: 'flex', alignItems: 'center' }}>
+          {suppressedCount > 0 && (
+            <div style={{ padding: '4px 8px', background: '#fff3cd', color: '#856404', borderRadius: 4, fontSize: '0.85em', width: '100%' }}>
+              ⚠️ {suppressedCount} row{suppressedCount > 1 ? 's' : ''} with suppressed data (not shown)
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Bottom half: Aladin sky view */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', paddingTop: 6 }}>
+        <AladinView rows={filteredRows} selectedRow={selectedRow} />
+      </div>
     </div>
   );
 }

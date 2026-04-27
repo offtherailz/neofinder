@@ -52,7 +52,6 @@ function App() {
     if (position?.latitude != null && position?.longitude != null) {
       setEphemParam(prev => ({
         ...prev,
-        Parallax: 2,
         lat: position.latitude,
         long: position.longitude,
         alt: position.altitude ?? 0,
