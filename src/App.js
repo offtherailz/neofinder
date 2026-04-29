@@ -68,6 +68,9 @@ function App() {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
   useEffect(() => {
+    saveSetting(CONFIG_KEYS.FILTER, filter);
+  }, [filter]);
+  useEffect(() => {
     const interval = setInterval(() => {
       if (autoUpdate) {
         setTime(new Date());
