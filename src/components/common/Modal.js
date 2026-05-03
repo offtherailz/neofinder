@@ -34,10 +34,12 @@ function Modal({ open, onClose, children }) {
         style={{
           maxHeight: "90vh",
           overflow: "auto",
+          overflowX: "hidden",
           background: "#fff",
-          padding: "2rem",
+          padding: "1.25rem",
           borderRadius: 8,
-          minWidth: 600,
+          width: "min(600px, 95vw)",
+          boxSizing: "border-box",
           minHeight: 100,
           position: "relative",
           boxShadow: "0 0 12px rgba(0,0,0,0.2)"

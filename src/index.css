@@ -7,6 +7,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Reset fieldset UA min-width so flex/grid can shrink it properly */
+fieldset {
+  min-width: 0;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

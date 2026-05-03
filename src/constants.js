@@ -8,8 +8,12 @@ export const CONFIG_KEYS = {
     FILTER: 'filter',
     EPHEM_PARAMS: 'ephemParams',
     CAMERA_SAMPLING: 'cameraSampling',
-    MAX_OFFSET_ARCSEC: 'maxOffsetArcsec'
+    MAX_OFFSET_ARCSEC: 'maxOffsetArcsec',
+    FOV_SIZE: 'fovSize',
 };
+
+/** Default camera field of view in degrees: 30' × 20' */
+export const DEFAULT_FOV_SIZE = { width: 0.5, height: 0.333 };
 
 export const DEFAULT_CAMERA_SAMPLING = 1.055;
 export const DEFAULT_MAX_OFFSET_ARCSEC = 10;

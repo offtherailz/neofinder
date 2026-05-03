@@ -6,7 +6,7 @@ import { applyAsteroidsFilter, getVirtualHorizonByAltitude } from './utils/utils
 import NeocpAsteroidsTable from './components/AsteroidsTable';
 import { fetchAsteroids } from './api/neocp';
 import { getSetting, saveSetting } from './persistence';
-import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_EPHEM_PARAMS, DEFAULT_MAX_OFFSET_ARCSEC } from './constants';
+import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_EPHEM_PARAMS, DEFAULT_MAX_OFFSET_ARCSEC, DEFAULT_FOV_SIZE } from './constants';
 import Sidebar from './components/common/SideBar';
 import EphemTable from './components/EphemTable';
 import logo from './logo192.png';
@@ -64,6 +64,12 @@ function App() {
   const [maxOffsetArcsec, setMaxOffsetArcsec] = useState(() => {
     return getSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC) ?? DEFAULT_MAX_OFFSET_ARCSEC;
   });
+  const [fovSize, setFovSize] = useState(() => {
+    return getSetting(CONFIG_KEYS.FOV_SIZE) ?? DEFAULT_FOV_SIZE;
+  });
+  useEffect(() => {
+    saveSetting(CONFIG_KEYS.FOV_SIZE, fovSize);
+  }, [fovSize]);
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
@@ -133,6 +139,7 @@ function App() {
     saveSetting(CONFIG_KEYS.EPHEM_PARAMS, ephemParams);
     saveSetting(CONFIG_KEYS.CAMERA_SAMPLING, cameraSampling);
     saveSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC, maxOffsetArcsec);
+    saveSetting(CONFIG_KEYS.FOV_SIZE, fovSize);
     console.log("Settings saved");
 
   };
@@ -174,6 +181,8 @@ function App() {
           setCameraSampling={setCameraSampling}
           maxOffsetArcsec={maxOffsetArcsec}
           setMaxOffsetArcsec={setMaxOffsetArcsec}
+          fovSize={fovSize}
+          setFovSize={setFovSize}
         /></div>
       <main>
         <div className="app-map-wrapper">
@@ -226,6 +235,7 @@ function App() {
             ephemerids={ephemerids?.[showEphemName]}
             cameraSampling={cameraSampling}
             maxOffsetArcsec={maxOffsetArcsec}
+            fovSize={fovSize}
             />
         </Sidebar>
     </div>

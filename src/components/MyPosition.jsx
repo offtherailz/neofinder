@@ -8,7 +8,21 @@ import Modal from './common/Modal';
 import EphemMPCForm from './EphForm';
 import Tabs from './common/Tabs';
 import { getSetting } from '../persistence';
-import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_MAX_OFFSET_ARCSEC } from '../constants';
+import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_MAX_OFFSET_ARCSEC, DEFAULT_FOV_SIZE } from '../constants';
+
+/** Convert decimal degrees to { deg, min, sec } (all non-negative) */
+function degToDMS(degrees) {
+  const d = Math.floor(degrees);
+  const rem = (degrees - d) * 60;
+  const m = Math.floor(rem);
+  const s = parseFloat(((rem - m) * 60).toFixed(2));
+  return { deg: d, min: m, sec: s };
+}
+
+/** Convert { deg, min, sec } to decimal degrees */
+function dmsToDeg({ deg, min, sec }) {
+  return (Number(deg) || 0) + (Number(min) || 0) / 60 + (Number(sec) || 0) / 3600;
+}
 const MyPosition = ({
 
   position,
@@ -33,6 +47,8 @@ const MyPosition = ({
   setCameraSampling = () => {},
   maxOffsetArcsec,
   setMaxOffsetArcsec = () => {},
+  fovSize,
+  setFovSize = () => {},
 }) => {
   const [, setError] = useState(null);
   const [collapsed, setCollapsed] = useState(true);
@@ -48,6 +64,25 @@ const MyPosition = ({
     : (Number.isFinite(savedMaxOffsetArcsec) ? savedMaxOffsetArcsec : DEFAULT_MAX_OFFSET_ARCSEC);
   const [cameraSamplingInput, setCameraSamplingInput] = useState(String(cameraSamplingValue));
   const [maxOffsetArcsecInput, setMaxOffsetArcsecInput] = useState(String(maxOffsetArcsecValue));
+
+  // FOV local DMS state
+  const resolvedFov = (fovSize?.width != null && fovSize?.height != null) ? fovSize : DEFAULT_FOV_SIZE;
+  const [fovWidthDMS, setFovWidthDMS] = useState(() => degToDMS(resolvedFov.width));
+  const [fovHeightDMS, setFovHeightDMS] = useState(() => degToDMS(resolvedFov.height));
+
+  // Sync local DMS when fovSize changes from outside
+  useEffect(() => {
+    if (fovSize?.width != null) setFovWidthDMS(degToDMS(fovSize.width));
+    if (fovSize?.height != null) setFovHeightDMS(degToDMS(fovSize.height));
+  }, [showEphemParamsForm, fovSize?.width, fovSize?.height]); // re-sync when modal opens
+
+  const commitFovSize = () => {
+    const w = dmsToDeg(fovWidthDMS);
+    const h = dmsToDeg(fovHeightDMS);
+    if (w > 0 && h > 0) {
+      setFovSize({ width: w, height: h });
+    }
+  };
 
   useEffect(() => {
     setCameraSamplingInput(String(cameraSamplingValue));
@@ -252,36 +287,90 @@ const MyPosition = ({
                         className="form-input"
                       />
                     </label>
-                    <label className="form-label" title="Maximum acceptable offset uncertainty in arcseconds">
-                      Max offset (")
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={maxOffsetArcsecInput}
-                        onChange={(e) => setMaxOffsetArcsecInput(e.target.value)}
-                        onBlur={commitMaxOffsetArcsec}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            commitMaxOffsetArcsec();
-                          }
-                        }}
-                        className="form-input"
-                      />
-                    </label>
                   </form>
                   <div style={{ marginTop: '0.75rem' }}>
                     Max exposure formula used in ephemerides: (sampling * 60) / motion, with motion in arcsec/min
                   </div>
-                  <div style={{ marginTop: '0.35rem' }}>
-                    Offset warning threshold: objects with offset above this value are flagged in the ephemerides panel.
+
+                  <h2 className="form-title" style={{ marginTop: '1.25rem' }}>Field of View</h2>
+                  <div style={{ fontSize: '0.82em', color: '#555', marginBottom: '0.5rem' }}>
+                    Camera field of view drawn on the sky map when viewing ephemerides.
                   </div>
+                  <form style={{ display: 'flex', flexWrap: 'wrap', gap: 12, width: '100%', boxSizing: 'border-box' }}>
+                    <fieldset style={{ border: '1px solid #ccc', borderRadius: 4, padding: '0.5rem 0.75rem', flex: '1 1 160px', minWidth: 0, boxSizing: 'border-box' }}>
+                      <legend style={{ fontSize: '0.85em' }}>Width</legend>
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Degrees">
+                          °
+                          <input type="number" min="0" step="1" className="form-input"
+                            value={fovWidthDMS.deg}
+                            onChange={e => setFovWidthDMS(p => ({ ...p, deg: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Arcminutes">
+                          ′
+                          <input type="number" min="0" max="59" step="1" className="form-input"
+                            value={fovWidthDMS.min}
+                            onChange={e => setFovWidthDMS(p => ({ ...p, min: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Arcseconds">
+                          ″
+                          <input type="number" min="0" max="59.99" step="0.1" className="form-input"
+                            value={fovWidthDMS.sec}
+                            onChange={e => setFovWidthDMS(p => ({ ...p, sec: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                    <fieldset style={{ border: '1px solid #ccc', borderRadius: 4, padding: '0.5rem 0.75rem', flex: '1 1 160px', minWidth: 0, boxSizing: 'border-box' }}>
+                      <legend style={{ fontSize: '0.85em' }}>Height</legend>
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Degrees">
+                          °
+                          <input type="number" min="0" step="1" className="form-input"
+                            value={fovHeightDMS.deg}
+                            onChange={e => setFovHeightDMS(p => ({ ...p, deg: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Arcminutes">
+                          ′
+                          <input type="number" min="0" max="59" step="1" className="form-input"
+                            value={fovHeightDMS.min}
+                            onChange={e => setFovHeightDMS(p => ({ ...p, min: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                        <label className="form-label" style={{ flex: 1, minWidth: 0 }} title="Arcseconds">
+                          ″
+                          <input type="number" min="0" max="59.99" step="0.1" className="form-input"
+                            value={fovHeightDMS.sec}
+                            onChange={e => setFovHeightDMS(p => ({ ...p, sec: e.target.value }))}
+                            onBlur={commitFovSize}
+                            onKeyDown={e => e.key === 'Enter' && commitFovSize()}
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                  </form>
+
                   <button style={{ marginTop: '0.75rem' }} onClick={() => {
                     setCameraSampling(DEFAULT_CAMERA_SAMPLING);
                     setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
                     setMaxOffsetArcsec(DEFAULT_MAX_OFFSET_ARCSEC);
                     setMaxOffsetArcsecInput(String(DEFAULT_MAX_OFFSET_ARCSEC));
+                    setFovSize(DEFAULT_FOV_SIZE);
+                    setFovWidthDMS(degToDMS(DEFAULT_FOV_SIZE.width));
+                    setFovHeightDMS(degToDMS(DEFAULT_FOV_SIZE.height));
                   }}>
                     Reset Camera Settings
                   </button>

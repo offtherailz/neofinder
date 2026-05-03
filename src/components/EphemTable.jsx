@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import DataGrid from "./common/AutoHeightDataGrid";
 import AladinView from "./AladinView";
 import "react-data-grid/lib/styles.css";
+import "./style/ephem-table.css";
 
 
 /**
@@ -9,7 +10,7 @@ import "react-data-grid/lib/styles.css";
  * @param {ephemerids[]} array of ephemerids
  * @returns
  */
-export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
+export default function EphemTable({ephemerids, cameraSampling = 1.055, fovSize}) {
   const [filters] = useState({});
   const [selectedRowIdx, setSelectedRowIdx] = useState(null);
 
@@ -130,7 +131,7 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055}) {
       </div>
       {/* Bottom half: Aladin sky view */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', paddingTop: 6 }}>
-        <AladinView rows={filteredRows} selectedRow={selectedRow} />
+        <AladinView rows={filteredRows} selectedRow={selectedRow} fovSize={fovSize} />
       </div>
     </div>
   );

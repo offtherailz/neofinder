@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { loadAladinScript } from '../utils/aladin';
 
 /**
@@ -6,10 +6,13 @@ import { loadAladinScript } from '../utils/aladin';
  * @param {Object[]} rows - All ephemeris rows (with radd/decdd in decimal degrees).
  * @param {Object|null} selectedRow - The currently selected ephemeris row.
  */
-export default function AladinView({ rows = [], selectedRow = null }) {
+export default function AladinView({ rows = [], selectedRow = null, fovSize = null }) {
   const divId = useRef(`aladin-${Math.random().toString(36).substr(2, 9)}`);
+  const wrapperRef = useRef(null);
+  const canvasRef = useRef(null);
   const aladinRef = useRef(null);
   const [showTrail, setShowTrail] = useState(true);
+  const [showFov, setShowFov] = useState(true);
   const [ready, setReady] = useState(false);
 
   // Initialize Aladin once on mount
@@ -69,6 +72,14 @@ export default function AladinView({ rows = [], selectedRow = null }) {
       aladin.gotoRaDec(centerRow.radd, centerRow.decdd);
     }
 
+    // Zoom to field when a row is selected
+    if (selectedRow?.radd != null) {
+      const fieldDeg = fovSize?.width && fovSize?.height
+        ? Math.max(fovSize.width, fovSize.height) * 3
+        : 0.5;
+      aladin.setFov(fieldDeg);
+    }
+
     // Rebuild all layers
     aladin.removeLayers();
 
@@ -92,7 +103,75 @@ export default function AladinView({ rows = [], selectedRow = null }) {
       aladin.addCatalog(selCat);
       selCat.addSources([A.source(selectedRow.radd, selectedRow.decdd, { date: String(selectedRow.date) })]);
     }
-  }, [ready, selectedRow, showTrail, rows]);
+
+  }, [ready, selectedRow, showTrail, rows, fovSize]);
+
+  // Draw FOV rectangle on canvas overlay using world2pix (works at any zoom level)
+  const drawFov = useCallback(() => {
+    const canvas = canvasRef.current;
+    const aladin = aladinRef.current;
+    if (!canvas || !aladin) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!showFov || !fovSize?.width || !fovSize?.height ||
+        selectedRow?.radd == null || !Number.isFinite(selectedRow.radd)) return;
+
+    const ra0 = selectedRow.radd;
+    const dec0 = selectedRow.decdd;
+    const cosDec = Math.cos(dec0 * Math.PI / 180) || 1;
+    const halfW = (fovSize.width / 2) / cosDec;
+    const halfH = fovSize.height / 2;
+
+    const skyCorners = [
+      [ra0 - halfW, dec0 - halfH],
+      [ra0 + halfW, dec0 - halfH],
+      [ra0 + halfW, dec0 + halfH],
+      [ra0 - halfW, dec0 + halfH],
+    ];
+
+    const pix = skyCorners.map(([ra, dec]) => aladin.world2pix(ra, dec));
+    if (pix.some(p => !p || !Number.isFinite(p[0]))) return;
+
+    ctx.save();
+    ctx.strokeStyle = '#ffff00';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pix[0][0], pix[0][1]);
+    for (let i = 1; i < pix.length; i++) ctx.lineTo(pix[i][0], pix[i][1]);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }, [showFov, fovSize, selectedRow]);
+
+  // Attach Aladin pan/zoom listeners → redraw canvas
+  useEffect(() => {
+    if (!ready || !aladinRef.current) return;
+    const aladin = aladinRef.current;
+    drawFov();
+    aladin.on('positionChanged', drawFov);
+    aladin.on('zoomChanged', drawFov);
+    return () => {
+      try { aladin.off('positionChanged', drawFov); } catch (_) {}
+      try { aladin.off('zoomChanged', drawFov); } catch (_) {}
+    };
+  }, [ready, drawFov]);
+
+  // Keep canvas sized to its wrapper and redraw on resize
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const canvas = canvasRef.current;
+    if (!wrapper || !canvas) return;
+    const sync = () => {
+      canvas.width = wrapper.clientWidth;
+      canvas.height = wrapper.clientHeight;
+      drawFov();
+    };
+    const ro = new ResizeObserver(sync);
+    ro.observe(wrapper);
+    sync();
+    return () => ro.disconnect();
+  }, [drawFov]);
 
   if (rows.length === 0) return null;
 
@@ -108,13 +187,24 @@ export default function AladinView({ rows = [], selectedRow = null }) {
           />
           Show trajectory
         </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.9em', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={showFov}
+            onChange={e => setShowFov(e.target.checked)}
+          />
+          Show FOV
+        </label>
         {(selectedRow ?? rows[0]) && (
           <span style={{ fontSize: '0.82em', color: '#555' }}>
             RA: {(selectedRow ?? rows[0]).ra} &nbsp;|&nbsp; Dec: {(selectedRow ?? rows[0]).dec}
           </span>
         )}
       </div>
-      <div id={divId.current} style={{ width: '100%', flex: 1, minHeight: 0 }} />
+      <div ref={wrapperRef} style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <div id={divId.current} style={{ width: '100%', height: '100%' }} />
+        <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} />
+      </div>
     </div>
   );
 }
