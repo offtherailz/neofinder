@@ -5,6 +5,7 @@ import Tabs from './common/Tabs';
 import './style/references-modal.css';
 import UAIAsteroidiLogo from '../assets/img/uai asteroidi.png';
 import TabellaDimensioneAsteroidi from '../assets/img/tabella dimensioni.png';
+import MPCLogo from '../assets/img/mpc.png';
 import pdfNeocp from '../assets/pdf/tabella_grafica_punteggio_neocp.pdf';
 import pdfNeocpCandidati from '../assets/pdf/tabella_grafica_punteggio_neocp_candidati_aggiornati.pdf';
 
@@ -190,28 +191,18 @@ function TabRisorse() {
         </a>
       </div>
 
-      <div className="references-section">
-        <h3>🔭 Curve di Luce — Unione Astrofili Italiani</h3>
-        <p className="section-description">
-          Cartella condivisa con le curve di luce degli asteroidi curate dall'Unione Astrofili Italiani.
-        </p>
-        <div className="uai-link-container">
-          <img src={UAIAsteroidiLogo} alt="UAI Asteroidi" className="uai-logo" />
-
-        </div>
-      </div>
-
       <div className="references-section references-footer">
         <h3>🔗 Link Utili</h3>
         <ul className="references-list">
           <li>
             <a href="https://www.minorplanetcenter.net/" target="_blank" rel="noopener noreferrer">
-              Minor Planet Center (MPC)
+              <img src={MPCLogo} alt="Minor Planet Center" className="uai-logo" /> Minor Planet Center (MPC)
             </a>
           </li>
           <li>
             <a href="https://asteroidi.uai.it/it" target="_blank" rel="noopener noreferrer">
-              UAI — Sezione Asteroidi
+                        <img src={UAIAsteroidiLogo} alt="UAI Asteroidi" className="uai-logo" />
+UAI — Sezione Asteroidi
             </a>
           </li>
         </ul>
