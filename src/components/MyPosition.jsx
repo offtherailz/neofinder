@@ -54,6 +54,7 @@ const MyPosition = ({
   const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
+  const observatoryLocked = Number(ephemParams?.Parallax) === 1;
 
   const savedCameraSampling = getSetting(CONFIG_KEYS.CAMERA_SAMPLING);
   const cameraSamplingValue = Number.isFinite(cameraSampling)
@@ -178,7 +179,7 @@ const MyPosition = ({
         </button>
         <button title={isLoading ? "loading" : "get current position"}
         onClick={getMyPosition}
-        disabled={isLoading}>
+        disabled={isLoading || observatoryLocked}>
           <FaMapMarkerAlt />
         </button>
         <button title="save position"
@@ -205,25 +206,25 @@ const MyPosition = ({
             Lat :
             <input
               type="number"
-              value={position?.latitude || ''}
+              value={position?.latitude ?? ''}
               onChange={(e) => setPosition({ ...position, latitude: parseFloat(e.target.value) })}
-              disabled={isLoading}
+              disabled={isLoading || observatoryLocked}
             />
           </label>
           <label>
             Lon :
             <input
               type="number"
-              value={position?.longitude || ''}
+              value={position?.longitude ?? ''}
               onChange={(e) => setPosition({ ...position, longitude: parseFloat(e.target.value) })}
-              disabled={isLoading}
+              disabled={isLoading || observatoryLocked}
             />
           </label>
           <label>
             Hor (deg):
             <input
               type="number"
-              value={horizonHeight || ''}
+              value={horizonHeight ?? ''}
               onChange={(e) => setHorizonHeight(parseFloat(e.target.value))}
               disabled={isLoading}
             />

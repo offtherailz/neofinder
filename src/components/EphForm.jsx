@@ -89,19 +89,19 @@ export default function EphemMPCForm({ params, setParams }) {
         </label>
         <label className="form-label" title="Observatory code (if Parallax = 1)">
           obscode
-          <input type="text" name="obscode" value={params.obscode} onChange={handleChange} className="form-input" disabled={params.Parallax !== 1} />
+          <input type="text" name="obscode" value={params.obscode} onChange={handleChange} className="form-input" disabled={Number(params.Parallax) !== 1} />
         </label>
         <label className="form-label" title="Longitude in degrees (if Parallax = 2)">
           long
-          <input type="text" name="long" value={params.long} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
+          <input type="text" name="long" value={params.long} onChange={handleChange} className="form-input" disabled={Number(params.Parallax) !== 2} />
         </label>
         <label className="form-label" title="Latitude in degrees (if Parallax = 2)">
           lat
-          <input type="text" name="lat" value={params.lat} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
+          <input type="text" name="lat" value={params.lat} onChange={handleChange} className="form-input" disabled={Number(params.Parallax) !== 2} />
         </label>
         <label className="form-label" title="Altitude in meters (if Parallax = 2)">
           alt
-          <input type="number" name="alt" value={params.alt} onChange={handleChange} className="form-input" disabled={params.Parallax !== 2} />
+          <input type="number" name="alt" value={params.alt} onChange={handleChange} className="form-input" disabled={Number(params.Parallax) !== 2} />
         </label>
         <label className="form-label" title="Ephemeris interval">
           int (interval)

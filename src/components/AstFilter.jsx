@@ -30,11 +30,11 @@ export default function AsteroidFilter({ filter, setFilter }) {
   return (
     <>
       <button onClick={() => setShowFilters(true)}>
-        <FaFilter /> Filters
+        <FaFilter /> Filtri
       </button>
 
       <Modal open={showFilters} onClose={() => setShowFilters(false)}>
-        <h2>Search / filter</h2>
+        <h2>Ricerca / filtri</h2>
         <form className="filter-form">
           <div className="filter-group">
             <button

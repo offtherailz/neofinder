@@ -24,10 +24,11 @@ export default function AladinMainMap({
   position = null,
   time = new Date(),
   horizonData = null,
+  activeHorizon = false,
+  setActiveHorizon = () => {},
 }) {
   const aladinRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const [showHorizon, setShowHorizon] = useState(false);
 
   // Compute center RA/Dec from Local Sidereal Time + observer latitude
   const computeCenter = () => {
@@ -138,7 +139,7 @@ export default function AladinMainMap({
     }
 
     // --- Virtual horizon ---
-    if (showHorizon && horizonData) {
+    if (activeHorizon && horizonData) {
       const multiLine = horizonData.features?.[0]?.geometry?.coordinates ?? [];
       if (multiLine.length > 0) {
         const pts = multiLine[0].filter(([ra, dec]) => Number.isFinite(ra) && Number.isFinite(dec));
@@ -149,7 +150,7 @@ export default function AladinMainMap({
         }
       }
     }
-  }, [ready, filteredAsteroids, selectedAsteroids, ephemerids, showHorizon, horizonData]);
+  }, [ready, filteredAsteroids, selectedAsteroids, ephemerids, activeHorizon, horizonData]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -157,8 +158,8 @@ export default function AladinMainMap({
         <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', userSelect: 'none' }}>
           <input
             type="checkbox"
-            checked={showHorizon}
-            onChange={e => setShowHorizon(e.target.checked)}
+            checked={activeHorizon}
+            onChange={e => setActiveHorizon(e.target.checked)}
             disabled={!horizonData}
           />
           Mostra orizzonte

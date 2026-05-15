@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './App.css';
 import AladinMainMap from './components/AladinMainMap';
 import { FaBook } from 'react-icons/fa';
@@ -14,6 +14,34 @@ import logo from './logo192.png';
 import ReferencesModal from './components/ReferencesModal';
 const HORIZON_RESOLUTION = 360; // points
 const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
+const OBS_CODES_LEGACY_URL = "https://minorplanetcenter.net/iau/lists/ObsCodes.html";
+
+const parseLegacyObsLine = (text, code) => {
+  const line = text
+    .split(/\r?\n/)
+    .find((row) => row.slice(0, 3).toUpperCase() === code);
+  if (!line) {
+    return null;
+  }
+
+  const longitude = line.slice(4, 13).trim();
+  const rhocosphi = line.slice(13, 21).trim();
+  const rhosinphi = line.slice(21, 30).trim();
+  const name = line.slice(30).trim();
+
+  if (!Number.isFinite(Number(longitude)) || !Number.isFinite(Number(rhocosphi)) || !Number.isFinite(Number(rhosinphi))) {
+    return null;
+  }
+
+  return {
+    obscode: code,
+    longitude,
+    rhocosphi,
+    rhosinphi,
+    name,
+  };
+};
+
 function App() {
   // position and time
   const [position, setPosition] = useState(() => {
@@ -49,9 +77,14 @@ function App() {
   const [ephemParams, setEphemParam] = useState(() => {
     return getSetting(CONFIG_KEYS.EPHEM_PARAMS) ?? DEFAULT_EPHEM_PARAMS; // TODO: set form data
   });
+  const positionSyncingEphemParams = useRef(false);
+  const observatoriesByCodeRef = useRef(new Map());
+  const legacyObsTextRef = useRef(null);
+  const legacyObsRequestRef = useRef(null);
   // When position changes, update ephemParams to use observer's real coordinates (Parallax=2)
   useEffect(() => {
     if (position?.latitude != null && position?.longitude != null) {
+      positionSyncingEphemParams.current = true;
       setEphemParam(prev => ({
         ...prev,
         lat: position.latitude,
@@ -73,8 +106,111 @@ function App() {
     saveSetting(CONFIG_KEYS.FOV_SIZE, fovSize);
   }, [fovSize]);
   useEffect(() => {
+    if (position) {
+      saveSetting(CONFIG_KEYS.SAVED_POSITION, position);
+    }
+  }, [position]);
+  useEffect(() => {
+    if (horizonHeight !== null && horizonHeight !== undefined && !Number.isNaN(horizonHeight)) {
+      saveSetting(CONFIG_KEYS.HORIZON_HEIGHT, horizonHeight);
+    }
+  }, [horizonHeight]);
+  useEffect(() => {
+    saveSetting(CONFIG_KEYS.ACTIVE_HORIZON, activeHorizon);
+  }, [activeHorizon]);
+  useEffect(() => {
+    if (positionSyncingEphemParams.current) {
+      positionSyncingEphemParams.current = false;
+      return;
+    }
     saveSetting(CONFIG_KEYS.EPHEM_PARAMS, ephemParams);
   }, [ephemParams]);
+  useEffect(() => {
+    if (Number(ephemParams?.Parallax) !== 1) {
+      return;
+    }
+
+    const code = String(ephemParams?.obscode ?? '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{3}$/.test(code)) {
+      return;
+    }
+
+    let isCancelled = false;
+    const normalizeLongitude = (lonEast) => {
+      return ((lonEast + 180) % 360 + 360) % 360 - 180;
+    };
+    const applyObservatory = (obs) => {
+      if (isCancelled || !obs) {
+        return;
+      }
+      const longitudeEast = Number(obs.longitude);
+      const rhoCosPhi = Number(obs.rhocosphi);
+      const rhoSinPhi = Number(obs.rhosinphi);
+      if (!Number.isFinite(longitudeEast) || !Number.isFinite(rhoCosPhi) || !Number.isFinite(rhoSinPhi)) {
+        return;
+      }
+      const latitude = (Math.atan2(rhoSinPhi, rhoCosPhi) * 180) / Math.PI;
+      const longitude = normalizeLongitude(longitudeEast);
+      setPosition((prev) => {
+        const prevAltitude = prev?.altitude ?? 0;
+        if (prev?.latitude === latitude && prev?.longitude === longitude) {
+          return prev;
+        }
+        return {
+          latitude,
+          longitude,
+          altitude: prevAltitude,
+        };
+      });
+    };
+
+    const getLegacyObsText = async () => {
+      if (legacyObsTextRef.current) {
+        return legacyObsTextRef.current;
+      }
+      if (!legacyObsRequestRef.current) {
+        legacyObsRequestRef.current = fetch(OBS_CODES_LEGACY_URL)
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Unable to fetch legacy obs list: ${res.status}`);
+            }
+            return res.text();
+          })
+          .then((text) => {
+            legacyObsTextRef.current = text;
+            return text;
+          })
+          .finally(() => {
+            legacyObsRequestRef.current = null;
+          });
+      }
+      return legacyObsRequestRef.current;
+    };
+
+    const loadObservatory = async () => {
+      try {
+        if (observatoriesByCodeRef.current.has(code)) {
+          applyObservatory(observatoriesByCodeRef.current.get(code));
+          return;
+        }
+
+        const legacyText = await getLegacyObsText();
+        const obs = parseLegacyObsLine(legacyText, code);
+
+        if (obs?.obscode) {
+          observatoriesByCodeRef.current.set(String(obs.obscode).toUpperCase(), obs);
+        }
+        applyObservatory(obs);
+      } catch (err) {
+        console.warn('Unable to resolve observatory code', err);
+      }
+    };
+
+    loadObservatory();
+    return () => {
+      isCancelled = true;
+    };
+  }, [ephemParams?.Parallax, ephemParams?.obscode]);
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
@@ -132,9 +268,7 @@ function App() {
     if (position) {
       saveSetting(CONFIG_KEYS.SAVED_POSITION, position);
     }
-    if (activeHorizon) {
-      saveSetting(CONFIG_KEYS.ACTIVE_HORIZON, activeHorizon);
-    }
+    saveSetting(CONFIG_KEYS.ACTIVE_HORIZON, activeHorizon);
     if (horizonHeight !== null) {
       saveSetting(CONFIG_KEYS.HORIZON_HEIGHT, horizonHeight);
     }
@@ -199,6 +333,8 @@ function App() {
             position={position}
             time={time}
             horizonData={horizonData}
+            activeHorizon={activeHorizon}
+            setActiveHorizon={setActiveHorizon}
           />
         </div>
         <div className="app-table-wrapper">
