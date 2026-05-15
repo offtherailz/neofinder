@@ -197,14 +197,7 @@ function TabRisorse() {
         </p>
         <div className="uai-link-container">
           <img src={UAIAsteroidiLogo} alt="UAI Asteroidi" className="uai-logo" />
-          <a
-            href="LINK_RIMOSSO"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="reference-link external-link"
-          >
-            <FaExternalLinkAlt className="icon" /> Accedi alla cartella Google Drive
-          </a>
+
         </div>
       </div>
 
