@@ -72,6 +72,9 @@ function App() {
   useEffect(() => {
     saveSetting(CONFIG_KEYS.FOV_SIZE, fovSize);
   }, [fovSize]);
+  useEffect(() => {
+    saveSetting(CONFIG_KEYS.EPHEM_PARAMS, ephemParams);
+  }, [ephemParams]);
   const [filter, setFilter] = useState(() => {
     return getSetting(CONFIG_KEYS.FILTER) || {};
   });
