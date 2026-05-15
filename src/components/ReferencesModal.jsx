@@ -217,11 +217,6 @@ function TabRisorse() {
             </a>
           </li>
           <li>
-            <a href="https://www.minorplanetcenter.net/submit" target="_blank" rel="noopener noreferrer">
-              Invia osservazioni a MPC
-            </a>
-          </li>
-          <li>
             <a href="https://asteroidi.uai.it/it" target="_blank" rel="noopener noreferrer">
               UAI — Sezione Asteroidi
             </a>
