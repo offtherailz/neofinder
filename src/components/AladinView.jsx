@@ -185,7 +185,7 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
             checked={showTrail}
             onChange={e => setShowTrail(e.target.checked)}
           />
-          Show trajectory
+          Traiettoria
         </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.9em', userSelect: 'none' }}>
           <input
@@ -193,7 +193,7 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
             checked={showFov}
             onChange={e => setShowFov(e.target.checked)}
           />
-          Show FOV
+          Campo (seleziona una riga)
         </label>
         {(selectedRow ?? rows[0]) && (
           <span style={{ fontSize: '0.82em', color: '#555' }}>

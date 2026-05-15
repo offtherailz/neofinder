@@ -9,6 +9,48 @@ import { fetchEphemerides } from '../api/neocp';
 import AsteroidFilter from './AstFilter';
 
 const arrayAvg = (arr = []) => arr?.length  ? (arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(3) : NaN;
+
+const getScoreCellStyle = (score) => {
+  const numericScore = Number(score);
+  if (!Number.isFinite(numericScore)) {
+    return {
+      backgroundColor: '#e9ecef',
+      color: '#495057',
+      fontWeight: 600
+    };
+  }
+
+  if (numericScore < 20) {
+    return {
+      backgroundColor: '#90ee90',
+      color: '#0f5132',
+      fontWeight: 700
+    };
+  }
+
+  if (numericScore < 65) {
+    return {
+      backgroundColor: '#ffeb3b',
+      color: '#5f370e',
+      fontWeight: 700
+    };
+  }
+
+  if (numericScore < 90) {
+    return {
+      backgroundColor: '#ff9800',
+      color: '#4e2600',
+      fontWeight: 700
+    };
+  }
+
+  return {
+    backgroundColor: '#f44336',
+    color: '#ffffff',
+    fontWeight: 700
+  };
+};
+
 export function NeocpAsteroidsTable({
     ephemParams,
     setEphemParams,
@@ -64,6 +106,23 @@ export function NeocpAsteroidsTable({
       key: 'Score',
       width: 80,
       name: 'Score',
+      renderCell: ({ row }) => {
+        const score = row?.Score;
+        return (
+          <div
+            style={{
+              ...getScoreCellStyle(score),
+              borderRadius: 4,
+              textAlign: 'center',
+              padding: '2px 0',
+              width: '100%',
+              lineHeight: 1.2
+            }}
+          >
+            {score ?? '-'}
+          </div>
+        );
+      },
       sortable: true,
       resizable: true
     },{
@@ -204,8 +263,8 @@ export function NeocpAsteroidsTable({
      <div>
       <div className="controls">
         <div>
-          <button title="refresh the list of asteroids" disabled={!!(loading || loadingAsteroids)} onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Refresh Asteroids</button>
-          <button title="Fetch ephemerides for all the objects in the table" disabled={!!(loading || loadingAsteroids)} onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Fetch ephemerides</button>
+          <button title="refresh the list of asteroids" disabled={!!(loading || loadingAsteroids)} onClick={() => setRefreshAsteroids(!refreshAsteroids)}><GiAsteroid /> Aggiorna asteroidi</button>
+          <button title="Fetch ephemerides for all the objects in the table" disabled={!!(loading || loadingAsteroids)} onClick={() => fetchAllEphemerides(features.map(f => f.properties.Temp_Desig))}><GiMoonOrbit />Carica effemeridi</button>
           <AsteroidFilter
             filter={filter}
             setFilter={setFilter}
@@ -214,19 +273,19 @@ export function NeocpAsteroidsTable({
         <div style={{ textAlign: 'center', marginTop: '10px'}}>
         {loading || loadingAsteroids
           ?(<>
-            {loadingAsteroids ? 'Loading asteroids...' : null}
-            {loading ? `Loading ${loading}... ${progress} remaining` : null}
+            {loadingAsteroids ? 'Caricamento asteroidi...' : null}
+            {loading ? `Caricamento ${loading}... ${progress} rimanenti` : null}
             </>)
           : (<div>{
             filteredAsteroids?.features && (
-                `(${filteredAsteroids?.features.length} asteroid${filteredAsteroids?.features.length > 1 ? 's' : ''} filtered)`
+                `(${filteredAsteroids?.features.length} asteroide${filteredAsteroids?.features.length > 1 ? 'i' : ''} filtrat${filteredAsteroids?.features.length > 1 ? 'i' : 'o'})`
               )
             }
             {selectedAsteroids.length > 0 && (
-                `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 's' : ''} selected)`
+                `(${selectedAsteroids.length} asteroid${selectedAsteroids.length > 1 ? 'i' : 'e'} selezionat${selectedAsteroids.length > 1 ? 'i' : 'a'})`
             )}
             {asteroids && asteroids.features.length > 0 && (
-                `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 's' : ''} Total.`
+                `${asteroids.features.length} asteroid${asteroids.features.length > 1 ? 'i' : 'e'} totali.`
             )}</div>)
         }
     </div>

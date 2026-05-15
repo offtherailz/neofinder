@@ -23,9 +23,11 @@ export default function AladinMainMap({
   ephemerids = {},
   position = null,
   time = new Date(),
+  horizonData = null,
 }) {
   const aladinRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const [showHorizon, setShowHorizon] = useState(false);
 
   // Compute center RA/Dec from Local Sidereal Time + observer latitude
   const computeCenter = () => {
@@ -134,11 +136,35 @@ export default function AladinMainMap({
         overlay.add(A.polyline(pts.map(e => [e.radd, e.decdd]), { color: '#2196f3' }));
       });
     }
-  }, [ready, filteredAsteroids, selectedAsteroids, ephemerids]);
+
+    // --- Virtual horizon ---
+    if (showHorizon && horizonData) {
+      const multiLine = horizonData.features?.[0]?.geometry?.coordinates ?? [];
+      if (multiLine.length > 0) {
+        const pts = multiLine[0].filter(([ra, dec]) => Number.isFinite(ra) && Number.isFinite(dec));
+        if (pts.length > 1) {
+          const horizonOverlay = A.graphicOverlay({ color: '#00e676', lineWidth: 2 });
+          aladin.addOverlay(horizonOverlay);
+          horizonOverlay.add(A.polyline(pts, { color: '#00e676' }));
+        }
+      }
+    }
+  }, [ready, filteredAsteroids, selectedAsteroids, ephemerids, showHorizon, horizonData]);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <div id="aladin-main-map" style={{ width: '100%', height: '100%' }} />
+    <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '3px 6px', flexShrink: 0, background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: '0.85em' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={showHorizon}
+            onChange={e => setShowHorizon(e.target.checked)}
+            disabled={!horizonData}
+          />
+          Mostra orizzonte
+        </label>
+      </div>
+      <div id="aladin-main-map" style={{ flex: 1, minHeight: 0 }} />
     </div>
   );
 }

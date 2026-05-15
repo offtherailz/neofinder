@@ -12,8 +12,8 @@ export const CONFIG_KEYS = {
     FOV_SIZE: 'fovSize',
 };
 
-/** Default camera field of view in degrees: 30' × 20' */
-export const DEFAULT_FOV_SIZE = { width: 0.5, height: 0.333 };
+/** Default camera field of view in degrees: 42' × 35' */
+export const DEFAULT_FOV_SIZE = { width: 0.7, height: 0.5833 };
 
 export const DEFAULT_CAMERA_SAMPLING = 1.055;
 export const DEFAULT_MAX_OFFSET_ARCSEC = 10;

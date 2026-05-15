@@ -54,6 +54,7 @@ const MyPosition = ({
   const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
+
   const savedCameraSampling = getSetting(CONFIG_KEYS.CAMERA_SAMPLING);
   const cameraSamplingValue = Number.isFinite(cameraSampling)
     ? cameraSampling
@@ -168,7 +169,7 @@ const MyPosition = ({
         title={collapsed ? "expand" : "collapse"} onClick={() => setCollapsed(!collapsed)}>
           {collapsed ? '▼' : '▲'}
         </button>
-        <h2>Position</h2>&nbsp;&nbsp;
+        <h2>Posizione</h2>&nbsp;&nbsp;
         <div className="position-viewer-buttons">
           <button className={showEphemParamsForm ? "button-active" : ""} title="Show params form"
         onClick={() => setShowEphemParamsForm(!showEphemParamsForm)}
@@ -196,6 +197,7 @@ const MyPosition = ({
         onClick={() => setShowAsteroids(!showAsteroids)}>
           <GiAsteroid />
         </button>
+
         </div>
       </div>
       {!collapsed && (<div className="position-viewer-content">
@@ -267,9 +269,9 @@ const MyPosition = ({
               label: 'Camera',
               content: (
                 <div className="form-container">
-                  <h1 className="form-title">Camera Settings</h1>
+                  <h1 className="form-title">Impostazioni Camera</h1>
                   <form className="form-grid">
-                    <label className="form-label" title="Camera sampling in arcsec/pixel">
+                    <label className="form-label" title="Campionamento della camera in arcsec/pixel">
                       Cam (arcsec/px)
                       <input
                         type="number"
@@ -289,12 +291,12 @@ const MyPosition = ({
                     </label>
                   </form>
                   <div style={{ marginTop: '0.75rem' }}>
-                    Max exposure formula used in ephemerides: (sampling * 60) / motion, with motion in arcsec/min
+                    Formula per la massima esposizione: (sampling * 60) / motion, con motion in arcsec/min
                   </div>
 
-                  <h2 className="form-title" style={{ marginTop: '1.25rem' }}>Field of View</h2>
+                  <h2 className="form-title" style={{ marginTop: '1.25rem' }}>Campo Visivo</h2>
                   <div style={{ fontSize: '0.82em', color: '#555', marginBottom: '0.5rem' }}>
-                    Camera field of view drawn on the sky map when viewing ephemerides.
+                    Il campo visivo della camera viene disegnato sulla mappa del cielo quando si visualizzano le effemeridi.
                   </div>
                   <form style={{ display: 'flex', flexWrap: 'wrap', gap: 12, width: '100%', boxSizing: 'border-box' }}>
                     <fieldset style={{ border: '1px solid #ccc', borderRadius: 4, padding: '0.5rem 0.75rem', flex: '1 1 160px', minWidth: 0, boxSizing: 'border-box' }}>
@@ -372,7 +374,7 @@ const MyPosition = ({
                     setFovWidthDMS(degToDMS(DEFAULT_FOV_SIZE.width));
                     setFovHeightDMS(degToDMS(DEFAULT_FOV_SIZE.height));
                   }}>
-                    Reset Camera Settings
+                    Reset valori
                   </button>
                 </div>
               )

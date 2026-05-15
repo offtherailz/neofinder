@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import AladinMainMap from './components/AladinMainMap';
+import { FaBook } from 'react-icons/fa';
 import MyPosition from './components/MyPosition';
 import { applyAsteroidsFilter, getVirtualHorizonByAltitude } from './utils/utils';
 import NeocpAsteroidsTable from './components/AsteroidsTable';
@@ -10,6 +11,7 @@ import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_EPHEM_PARAMS, DEFAULT_MAX
 import Sidebar from './components/common/SideBar';
 import EphemTable from './components/EphemTable';
 import logo from './logo192.png';
+import ReferencesModal from './components/ReferencesModal';
 const HORIZON_RESOLUTION = 360; // points
 const DEFAULT_TIME_UPDATE_INTERVAL = 60000;
 function App() {
@@ -121,6 +123,7 @@ function App() {
     return applyAsteroidsFilter(asteroids, filter, filterData);
   }, [asteroids, filter, filterData]);
   const [showEphemName, setShowEphemName] = useState();
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
 
   const saveSettings = () => {
     if (position) {
@@ -192,6 +195,7 @@ function App() {
             ephemerids={ephemerids}
             position={position}
             time={time}
+            horizonData={horizonData}
           />
         </div>
         <div className="app-table-wrapper">
@@ -220,7 +224,11 @@ function App() {
       <footer>
         <i>This research has made use of data and/or services provided by the International Astronomical Union's <a href="https://www.minorplanetcenter.net/">Minor Planet Center.</a></i><br />
         <i>developed by <a href="https://github.com/offtherailz">@offtherailz</a> as a member and with collaboration of <a href="https://www.astrofilispezzini.org/">AAS</a></i>
-
+        &nbsp;<button title="open resources and references"
+                onClick={() => setShowReferencesModal(true)}>
+                  <FaBook />
+                </button>
+            <ReferencesModal open={showReferencesModal} onClose={() => setShowReferencesModal(false)} />
       </footer>
       <Sidebar
         title={`Ephemerids for ${showEphemName}`}
