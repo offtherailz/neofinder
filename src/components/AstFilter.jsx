@@ -24,6 +24,12 @@ export default function AsteroidFilter({ filter, setFilter }) {
   };
 
   const clearAll = () => {
+    const confirmed = window.confirm('Vuoi davvero azzerare tutti i filtri?');
+
+    if (!confirmed) {
+      return;
+    }
+
     setFilter({});
   };
 
@@ -356,8 +362,11 @@ export default function AsteroidFilter({ filter, setFilter }) {
           </fieldset>
 
           <div className="filter-buttons">
+            <button type="button" onClick={() => setShowFilters(false)}>
+              Close
+            </button>
             <button type="button" onClick={clearAll}>
-              Clear
+              Reset
             </button>
           </div>
         </form>
