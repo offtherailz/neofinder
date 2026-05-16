@@ -262,6 +262,34 @@ function App() {
     return applyAsteroidsFilter(asteroids, filter, filterData);
   }, [asteroids, filter, filterData]);
   const [showEphemName, setShowEphemName] = useState();
+  const mapRef = useRef(null);
+  const centerMap = (ra, dec) => mapRef.current?.gotoRaDec(ra, dec);
+  const [tableHeight, setTableHeight] = useState(300);
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartHeight = useRef(0);
+
+  const onDragHandleMouseDown = (e) => {
+    isDragging.current = true;
+    dragStartY.current = e.clientY;
+    dragStartHeight.current = tableHeight;
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (!isDragging.current) return;
+      const delta = dragStartY.current - e.clientY;
+      setTableHeight(Math.max(80, dragStartHeight.current + delta));
+    };
+    const onMouseUp = () => { isDragging.current = false; };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [tableHeight]);
   const [showReferencesModal, setShowReferencesModal] = useState(false);
 
   const saveSettings = () => {
@@ -325,8 +353,9 @@ function App() {
           setFovSize={setFovSize}
         /></div>
       <main>
-        <div className="app-map-wrapper">
+        <div className="app-map-wrapper" style={{ flex: 1, minHeight: 0 }}>
           <AladinMainMap
+            ref={mapRef}
             filteredAsteroids={filteredAsteroids}
             selectedAsteroids={selectedAsteroids}
             ephemerids={ephemerids}
@@ -337,7 +366,10 @@ function App() {
             setActiveHorizon={setActiveHorizon}
           />
         </div>
-        <div className="app-table-wrapper">
+        <div className="resize-handle" onMouseDown={onDragHandleMouseDown}>
+          <div className="resize-handle-bar" />
+        </div>
+        <div className="app-table-wrapper" style={{ height: tableHeight, flex: 'none' }}>
         <NeocpAsteroidsTable
         openEphemerides={name =>
           setShowEphemName(name)
@@ -357,6 +389,7 @@ function App() {
           setSelectedAsteroids={setSelectedAsteroids}
           filter={filter}
           setFilter={setFilter}
+          onCenterMap={centerMap}
         />
         </div>
       </main>

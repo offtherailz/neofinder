@@ -182,23 +182,10 @@ const MyPosition = ({
         disabled={isLoading || observatoryLocked}>
           <FaMapMarkerAlt />
         </button>
-        <button title="save position"
-        onClick={saveSettings}>
-          <FaSave />
-        </button>
-        <button className={activeHorizon ? "button-active" : ""} title="set active horizon"
-        onClick={() => setActiveHorizon(!activeHorizon)}>
-          <GiHorizonRoad />
-        </button>
         <button className={autoUpdate ? "button-active" : ""} title="toggle auto update"
         onClick={() => setAutoUpdate(!autoUpdate)}>
           {autoUpdate ? <FaPause /> : <FaPlay />}
         </button>
-        <button className={showAsteroids ? "button-active" : ""} title="toggle asteroids"
-        onClick={() => setShowAsteroids(!showAsteroids)}>
-          <GiAsteroid />
-        </button>
-
         </div>
       </div>
       {!collapsed && (<div className="position-viewer-content">

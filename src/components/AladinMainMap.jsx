@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState, forwardRef } from 'react';
 import { loadAladinScript } from '../utils/aladin';
 import { skyMapCenter } from '../utils/utils';
 
@@ -17,7 +17,7 @@ import { skyMapCenter } from '../utils/utils';
  * @param {Object}   position           { latitude, longitude } or null
  * @param {Date}     time               Current time (used to compute LST center)
  */
-export default function AladinMainMap({
+const AladinMainMap = forwardRef(function AladinMainMap({
   filteredAsteroids,
   selectedAsteroids = new Set(),
   ephemerids = {},
@@ -26,9 +26,15 @@ export default function AladinMainMap({
   horizonData = null,
   activeHorizon = false,
   setActiveHorizon = () => {},
-}) {
+}, ref) {
   const aladinRef = useRef(null);
   const [ready, setReady] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    gotoRaDec: (ra, dec) => {
+      if (aladinRef.current) aladinRef.current.gotoRaDec(ra, dec);
+    }
+  }), []);
 
   // Compute center RA/Dec from Local Sidereal Time + observer latitude
   const computeCenter = () => {
@@ -55,7 +61,7 @@ export default function AladinMainMap({
           fov: 60,
           showReticle: false,
           showZoomControl: true,
-          showFullscreenControl: true,
+          showFullscreenControl: false,
           showLayersControl: true,
           showGotoControl: true,
           showFrame: true,
@@ -73,6 +79,7 @@ export default function AladinMainMap({
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // Re-center when position or time changes (after init)
   useEffect(() => {
@@ -168,4 +175,6 @@ export default function AladinMainMap({
       <div id="aladin-main-map" style={{ flex: 1, minHeight: 0 }} />
     </div>
   );
-}
+});
+
+export default AladinMainMap;

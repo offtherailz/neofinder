@@ -59,11 +59,30 @@ body {
   overflow: hidden;
 }
 .app-table-wrapper {
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  min-height: 80px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.resize-handle {
+  flex-shrink: 0;
+  height: 8px;
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a3a;
+  user-select: none;
+}
+
+.resize-handle-bar {
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: #4a9eff;
+  opacity: 0.6;
 }
 #NeocpAsteroidsTable {
   display: flex;

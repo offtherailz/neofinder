@@ -5,6 +5,7 @@ import 'react-data-grid/lib/styles.css';
 import './style/asteroid-table.css';
 import { applyAsteroidsFilter } from '../utils/utils';
 import { GiAsteroid, GiMoonOrbit } from 'react-icons/gi';
+import { SlTarget } from "react-icons/sl";
 import { fetchEphemerides } from '../api/neocp';
 import AsteroidFilter from './AstFilter';
 
@@ -67,6 +68,7 @@ export function NeocpAsteroidsTable({
     setEphemerids = () => {},
     openPanel,
     setFilter = () => {},
+    onCenterMap = null,
 }) {
   const [sortColumns, setSortColumns] = useState([]);
   const [loading, setLoading] = useState();
@@ -76,7 +78,17 @@ export function NeocpAsteroidsTable({
   const buttonsColumn = useMemo(() => ({
     key: 'actions',
     name: 'Actions',
-    renderCell: ({ row }) => (<button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} disabled={!!(loading || loadingAsteroids)} onClick={(evt, data) => {
+    renderCell: ({ row }) => (<>
+      {onCenterMap && (
+        <button
+          title="Centra in mappa"
+          onClick={() => onCenterMap(row._ra, row._dec)}
+          disabled={row._ra == null}
+        >
+          <SlTarget />
+        </button>
+      )}
+      <button className={ephemerids?.[row.Temp_Desig ] ? "button-active" : ""} disabled={!!(loading || loadingAsteroids)} onClick={(evt, data) => {
           fetchEphemerides({ ...ephemParams, obj: row.Temp_Desig })
             .then(newEphemerides => {
               setEphemerids((ee) => ({
@@ -89,10 +101,11 @@ export function NeocpAsteroidsTable({
               console.log(e);
             })
         }}>
-        <GiMoonOrbit title="Get ephemerides" />
-      </button>),
+        <GiMoonOrbit title="Apri effemeridi" />
+      </button>
+    </>),
     width: 100,
-  }), [ephemParams, ephemerids, setEphemerids, loading, loadingAsteroids, openEphemerides]);
+  }), [ephemParams, ephemerids, setEphemerids, loading, loadingAsteroids, openEphemerides, onCenterMap]);
 
   const columns = [
     SelectColumn,
@@ -199,7 +212,7 @@ export function NeocpAsteroidsTable({
       return `${year}-${month}-${day} (~${hours}:00)`
   }
   const rows = applyAsteroidsFilter(features ?? [], filter, { ephemerids })
-        .map(f => f.properties)
+        .map(f => ({ ...f.properties, _ra: f.geometry?.coordinates?.[0], _dec: f.geometry?.coordinates?.[1] }))
         .map(p => ({
           ...p,
           speed: getSpeed(ephemerids?.[p.Temp_Desig]?.ephem),

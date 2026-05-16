@@ -25,6 +25,13 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Neo Finder</title>
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
     <!-- Aladin Lite v3 must be loaded outside the webpack bundle to avoid self.postMessage conflicts -->
     <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
     <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
