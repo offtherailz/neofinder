@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaMapMarkerAlt, FaSave, FaPlay, FaWpforms, FaPause } from 'react-icons/fa';
-import { GiHorizonRoad } from "react-icons/gi";
-import { GiAsteroid } from "react-icons/gi";
+import { FaMapMarkerAlt, FaPlay, FaWpforms, FaPause, FaQuestionCircle, FaCog, FaFilter } from 'react-icons/fa';
 import UTCDateTimePicker from './UTCDateTimePicker';
 import './style/position.css';
 import Modal from './common/Modal';
@@ -9,6 +7,7 @@ import EphemMPCForm from './EphForm';
 import Tabs from './common/Tabs';
 import { getSetting } from '../persistence';
 import { CONFIG_KEYS, DEFAULT_CAMERA_SAMPLING, DEFAULT_MAX_OFFSET_ARCSEC, DEFAULT_FOV_SIZE } from '../constants';
+import { GiMoonOrbit } from 'react-icons/gi';
 
 /** Convert decimal degrees to { deg, min, sec } (all non-negative) */
 function degToDMS(degrees) {
@@ -54,18 +53,14 @@ const MyPosition = ({
   const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const observatoryLocked = Number(ephemParams?.Parallax) === 1;
 
   const savedCameraSampling = getSetting(CONFIG_KEYS.CAMERA_SAMPLING);
   const cameraSamplingValue = Number.isFinite(cameraSampling)
     ? cameraSampling
     : (Number.isFinite(savedCameraSampling) ? savedCameraSampling : DEFAULT_CAMERA_SAMPLING);
-  const savedMaxOffsetArcsec = getSetting(CONFIG_KEYS.MAX_OFFSET_ARCSEC);
-  const maxOffsetArcsecValue = Number.isFinite(maxOffsetArcsec)
-    ? maxOffsetArcsec
-    : (Number.isFinite(savedMaxOffsetArcsec) ? savedMaxOffsetArcsec : DEFAULT_MAX_OFFSET_ARCSEC);
   const [cameraSamplingInput, setCameraSamplingInput] = useState(String(cameraSamplingValue));
-  const [maxOffsetArcsecInput, setMaxOffsetArcsecInput] = useState(String(maxOffsetArcsecValue));
 
   // FOV local DMS state
   const resolvedFov = (fovSize?.width != null && fovSize?.height != null) ? fovSize : DEFAULT_FOV_SIZE;
@@ -90,10 +85,6 @@ const MyPosition = ({
     setCameraSamplingInput(String(cameraSamplingValue));
   }, [cameraSamplingValue, showEphemParamsForm]);
 
-  useEffect(() => {
-    setMaxOffsetArcsecInput(String(maxOffsetArcsecValue));
-  }, [maxOffsetArcsecValue, showEphemParamsForm]);
-
   const commitCameraSampling = () => {
     const nextValue = parseFloat(cameraSamplingInput);
     if (Number.isFinite(nextValue) && nextValue > 0) {
@@ -103,17 +94,6 @@ const MyPosition = ({
     }
     setCameraSampling(DEFAULT_CAMERA_SAMPLING);
     setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
-  };
-
-  const commitMaxOffsetArcsec = () => {
-    const nextValue = parseFloat(maxOffsetArcsecInput);
-    if (Number.isFinite(nextValue) && nextValue > 0) {
-      setMaxOffsetArcsec(nextValue);
-      setMaxOffsetArcsecInput(String(nextValue));
-      return;
-    }
-    setMaxOffsetArcsec(DEFAULT_MAX_OFFSET_ARCSEC);
-    setMaxOffsetArcsecInput(String(DEFAULT_MAX_OFFSET_ARCSEC));
   };
 
   const getMyPosition = () => {
@@ -167,22 +147,25 @@ const MyPosition = ({
           cursor: 'pointer',
         }}
         alt="Expand/Collapse position viewer"
-        title={collapsed ? "expand" : "collapse"} onClick={() => setCollapsed(!collapsed)}>
+        title={collapsed ? "Espandi pannello Posizione" : "Comprimi pannello Posizione"} onClick={() => setCollapsed(!collapsed)}>
           {collapsed ? '▼' : '▲'}
         </button>
         <h2>Posizione</h2>&nbsp;&nbsp;
         <div className="position-viewer-buttons">
-          <button className={showEphemParamsForm ? "button-active" : ""} title="Show params form"
+          <button title="Apri guida rapida" onClick={() => setShowHelp(true)}>
+            <FaQuestionCircle />
+          </button>
+          <button className={showEphemParamsForm ? "button-active" : ""} title="Apri configurazioni posizione e camera"
         onClick={() => setShowEphemParamsForm(!showEphemParamsForm)}
         disabled={isLoading}>
-          <FaWpforms />
+          <FaCog />
         </button>
-        <button title={isLoading ? "loading" : "get current position"}
+        <button title={isLoading ? "Recupero posizione corrente" : "Usa la posizione corrente"}
         onClick={getMyPosition}
         disabled={isLoading || observatoryLocked}>
           <FaMapMarkerAlt />
         </button>
-        <button className={autoUpdate ? "button-active" : ""} title="toggle auto update"
+        <button className={autoUpdate ? "button-active" : ""} title="Attiva o disattiva aggiornamento automatico"
         onClick={() => setAutoUpdate(!autoUpdate)}>
           {autoUpdate ? <FaPause /> : <FaPlay />}
         </button>
@@ -357,7 +340,6 @@ const MyPosition = ({
                     setCameraSampling(DEFAULT_CAMERA_SAMPLING);
                     setCameraSamplingInput(String(DEFAULT_CAMERA_SAMPLING));
                     setMaxOffsetArcsec(DEFAULT_MAX_OFFSET_ARCSEC);
-                    setMaxOffsetArcsecInput(String(DEFAULT_MAX_OFFSET_ARCSEC));
                     setFovSize(DEFAULT_FOV_SIZE);
                     setFovWidthDMS(degToDMS(DEFAULT_FOV_SIZE.width));
                     setFovHeightDMS(degToDMS(DEFAULT_FOV_SIZE.height));
@@ -369,6 +351,47 @@ const MyPosition = ({
             }
           ]}
         />
+      </Modal>
+    }
+    {
+      <Modal open={showHelp} onClose={() => { setShowHelp(false); }}>
+        <h2 style={{ marginTop: 0 }}>Guida rapida</h2>
+        <ol style={{ margin: '0 0 0.5rem 1.2rem', padding: 0, lineHeight: 1.6 }}>
+          <h5>Configurazione iniziale</h5>
+          <li>
+            Apri <strong>Configurazioni <FaCog /></strong> e, nella scheda <strong>MPC Params</strong> imposta il codice osservatorio MPC (<strong>obscode</strong>), oppure imposta Parallax a "custom coordinates" e inserisci le coordinate manualmente.
+          </li>
+          <li>
+            Nella scheda <strong>Camera</strong> imposta i parametri richiesti, servono per il tempo massimo di esposizione
+            e per il rettangolo mostrato sulle mappe delle effemeridi.
+          </li>
+          <li>
+            Chiudi la finestra. Espandendo (▼) la posizione ora vedrai le coordinate inserite e potrai cambiare l'altezza dell'orizzonte.
+          </li>
+          <h5>Filtraggio e ordinamento</h5>
+          <li>
+            Filtra (tramite il pulsante <strong>Filtri <FaFilter /></strong>).
+            La tabella si può ordinare cliccando sulle intestazioni di colonna (es. <strong>Score</strong>).
+            I filtri per velocità media verranno applicati solo dopo aver caricato le effemeridi.
+          </li>
+          <h5>Caricamento e visualizzazione effemeridi</h5>
+          <li>
+            Una volta filtrati gli oggetti di interesse, premi <strong>Carica effemeridi</strong> per scaricare le effemeridi di tutti gli oggetti in tabella.
+          </li>
+          <li>
+            Clicca su uno dei pulsanti <GiMoonOrbit /> per aprire il pannello delle effemeridi di quell'oggetto.
+          </li>
+          <li>
+            I tempi di esposizione massima sono già calcolati per ogni riga.
+            Selezionando una riga delle effemeridi, puoi centrare la mappa sull'oggetto e visualizzare il campo visivo configurato.
+
+          </li>
+          <br/>
+          <em>
+            Tutte le configurazioni (posizione, camera, parametri, filtri ...) vengono salvate automaticamente e ripristinate al successivo accesso.
+          </em>
+        </ol>
+
       </Modal>
     }
     </>

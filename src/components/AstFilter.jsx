@@ -42,7 +42,7 @@ export default function AsteroidFilter({ filter, setFilter }) {
               className={`horizon-toggle ${filter?.horizon ? 'button-active' : ''}`}
               onClick={() => toggleFlag('horizon')}
             >
-              <FaFilter /> Horizon
+              <FaFilter /> Filtra per orizzonte
             </button>
           </div>
 

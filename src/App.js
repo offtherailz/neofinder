@@ -57,7 +57,7 @@ function App() {
 
   // horizon activation an height
   const [activeHorizon, setActiveHorizon] = useState(() => {
-    return getSetting(CONFIG_KEYS.ACTIVE_HORIZON) || false;
+    return getSetting(CONFIG_KEYS.ACTIVE_HORIZON) ?? true;
   });
   const [horizonData, setHorizonData] = useState();
   const [horizonHeight, setHorizonHeight] = useState(() => {
@@ -396,8 +396,7 @@ function App() {
       <footer>
         <i>This research has made use of data and/or services provided by the International Astronomical Union's <a href="https://www.minorplanetcenter.net/">Minor Planet Center.</a></i><br />
         <i>developed by <a href="https://github.com/offtherailz">@offtherailz</a> as a member and with collaboration of <a href="https://www.astrofilispezzini.org/">AAS</a></i>
-        &nbsp;<button title="open resources and references"
-                onClick={() => setShowReferencesModal(true)}>
+        &nbsp;<button title="Apri risorse e riferimenti" onClick={() => setShowReferencesModal(true)}>
                   <FaBook />
                 </button>
             <ReferencesModal open={showReferencesModal} onClose={() => setShowReferencesModal(false)} />
