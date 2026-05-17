@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import DataGrid from "./common/AutoHeightDataGrid";
 import AladinView from "./AladinView";
+import useResizeObserver from "../hooks/useResizeObserver";
 import "react-data-grid/lib/styles.css";
 import "./style/ephem-table.css";
 
@@ -13,6 +14,17 @@ import "./style/ephem-table.css";
 export default function EphemTable({ephemerids, cameraSampling = 1.055, fovSize}) {
   const [filters] = useState({});
   const [selectedRowIdx, setSelectedRowIdx] = useState(null);
+  const containerRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartHeight = useRef(0);
+  const { height: containerHeight } = useResizeObserver(containerRef);
+  const [tableHeight, setTableHeight] = useState(null);
+
+  const WARNING_H = 32;
+  const SPLITTER_H = 8;
+  const MIN_TABLE_H = 180;
+  const MIN_MAP_H = 180;
 
 
   // Define columns
@@ -105,12 +117,76 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055, fovSize}
 
   const selectedRow = selectedRowIdx != null ? filteredRows[selectedRowIdx] ?? null : null;
 
-  const WARNING_H = 32; // reserved px when warning is visible
+  useEffect(() => {
+    if (!containerHeight || tableHeight != null) {
+      return;
+    }
+    setTableHeight(Math.round(containerHeight * 0.55));
+  }, [containerHeight, tableHeight]);
+
+  useEffect(() => {
+    if (!containerHeight || tableHeight == null) {
+      return;
+    }
+
+    const maxTableHeight = Math.max(
+      MIN_TABLE_H,
+      containerHeight - MIN_MAP_H - SPLITTER_H
+    );
+    const nextHeight = Math.min(Math.max(tableHeight, MIN_TABLE_H), maxTableHeight);
+
+    if (nextHeight !== tableHeight) {
+      setTableHeight(nextHeight);
+    }
+  }, [containerHeight, tableHeight]);
+
+  useEffect(() => {
+    const onMouseMove = (event) => {
+      if (!isDragging.current || !containerHeight) {
+        return;
+      }
+
+      const maxTableHeight = Math.max(
+        MIN_TABLE_H,
+        containerHeight - MIN_MAP_H - SPLITTER_H
+      );
+      const delta = event.clientY - dragStartY.current;
+      const nextHeight = Math.min(
+        Math.max(dragStartHeight.current + delta, MIN_TABLE_H),
+        maxTableHeight
+      );
+
+      setTableHeight(nextHeight);
+    };
+
+    const onMouseUp = () => {
+      isDragging.current = false;
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [containerHeight]);
+
+  const onSplitterMouseDown = useCallback((event) => {
+    if (tableHeight == null) {
+      return;
+    }
+
+    isDragging.current = true;
+    dragStartY.current = event.clientY;
+    dragStartHeight.current = tableHeight;
+    event.preventDefault();
+  }, [tableHeight]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       {/* Top half: table + warning banner */}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 6 }}>
+      <div style={{ flex: 'none', height: tableHeight ?? undefined, minHeight: MIN_TABLE_H, display: 'flex', flexDirection: 'column', paddingBottom: 6 }}>
         <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <DataGrid
             className="rdg-light"
@@ -129,8 +205,11 @@ export default function EphemTable({ephemerids, cameraSampling = 1.055, fovSize}
           )}
         </div>
       </div>
+      <div className="ephem-splitter" onMouseDown={onSplitterMouseDown}>
+        <div className="ephem-splitter-bar" />
+      </div>
       {/* Bottom half: Aladin sky view */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', paddingTop: 6 }}>
+      <div style={{ flex: 1, minHeight: MIN_MAP_H, overflow: 'hidden', paddingTop: 6 }}>
         <AladinView rows={filteredRows} selectedRow={selectedRow} fovSize={fovSize} />
       </div>
     </div>

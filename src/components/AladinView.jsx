@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { loadAladinScript } from '../utils/aladin';
+import useResizeObserver from '../hooks/useResizeObserver';
 
 /**
  * Shows an Aladin Lite sky view centered on the selected ephemeris position.
@@ -14,6 +15,8 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
   const [showTrail, setShowTrail] = useState(true);
   const [showFov, setShowFov] = useState(true);
   const [ready, setReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const { width: wrapperWidth, height: wrapperHeight } = useResizeObserver(wrapperRef);
 
   // Initialize Aladin once on mount
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
           fov: 0.25,
           showReticle: true,
           showZoomControl: true,
-          showFullscreenControl: true,
+          showFullscreenControl: false,
           showLayersControl: true,
           showGotoControl: false,
           showFrame: true,
@@ -107,6 +110,30 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
   }, [ready, selectedRow, showTrail, rows, fovSize]);
 
   // Draw FOV rectangle on canvas overlay using world2pix (works at any zoom level)
+  const syncCanvasSize = useCallback(() => {
+    const canvas = canvasRef.current;
+    const wrapper = wrapperRef.current;
+
+    if (!canvas || !wrapper) {
+      return false;
+    }
+
+    const nextWidth = Math.max(0, Math.round(wrapper.clientWidth));
+    const nextHeight = Math.max(0, Math.round(wrapper.clientHeight));
+
+    if (canvas.width !== nextWidth) {
+      canvas.width = nextWidth;
+    }
+    if (canvas.height !== nextHeight) {
+      canvas.height = nextHeight;
+    }
+
+    canvas.style.width = `${nextWidth}px`;
+    canvas.style.height = `${nextHeight}px`;
+
+    return nextWidth > 0 && nextHeight > 0;
+  }, []);
+
   const drawFov = useCallback(() => {
     const canvas = canvasRef.current;
     const aladin = aladinRef.current;
@@ -144,6 +171,38 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
     ctx.restore();
   }, [showFov, fovSize, selectedRow]);
 
+  const refreshOverlay = useCallback(() => {
+    if (!ready || !aladinRef.current) {
+      return;
+    }
+
+    const aladin = aladinRef.current;
+
+    const runRefresh = () => {
+      if (!syncCanvasSize()) {
+        return;
+      }
+
+      const currentCenter = aladin.getRaDec?.();
+      const currentFov = aladin.getFov?.();
+      const [ra, dec] = Array.isArray(currentCenter) ? currentCenter : [];
+      const fov = Array.isArray(currentFov) ? currentFov[0] : currentFov;
+
+      if (Number.isFinite(ra) && Number.isFinite(dec)) {
+        aladin.gotoRaDec(ra, dec);
+      }
+      if (Number.isFinite(fov)) {
+        aladin.setFov(fov);
+      }
+
+      drawFov();
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(runRefresh);
+    });
+  }, [drawFov, ready, syncCanvasSize]);
+
   // Attach Aladin pan/zoom listeners → redraw canvas
   useEffect(() => {
     if (!ready || !aladinRef.current) return;
@@ -157,21 +216,43 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
     };
   }, [ready, drawFov]);
 
-  // Keep canvas sized to its wrapper and redraw on resize
+  // Redraw after wrapper resizes or browser fullscreen changes.
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    const canvas = canvasRef.current;
-    if (!wrapper || !canvas) return;
-    const sync = () => {
-      canvas.width = wrapper.clientWidth;
-      canvas.height = wrapper.clientHeight;
-      drawFov();
+    refreshOverlay();
+  }, [refreshOverlay, wrapperWidth, wrapperHeight]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === wrapperRef.current);
+      refreshOverlay();
     };
-    const ro = new ResizeObserver(sync);
-    ro.observe(wrapper);
-    sync();
-    return () => ro.disconnect();
-  }, [drawFov]);
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [refreshOverlay]);
+
+  const toggleFullscreen = useCallback(async () => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) {
+      return;
+    }
+
+    try {
+      if (document.fullscreenElement === wrapper) {
+        await document.exitFullscreen();
+      } else {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
+        await wrapper.requestFullscreen();
+      }
+    } catch (error) {
+      console.warn('Unable to toggle fullscreen for Aladin view', error);
+    }
+  }, []);
 
   if (rows.length === 0) return null;
 
@@ -202,6 +283,26 @@ export default function AladinView({ rows = [], selectedRow = null, fovSize = nu
         )}
       </div>
       <div ref={wrapperRef} style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 3,
+            border: '1px solid rgba(255, 255, 255, 0.45)',
+            background: 'rgba(0, 0, 0, 0.72)',
+            color: '#fff',
+            padding: '6px 10px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontSize: '0.8em'
+          }}
+          title={isFullscreen ? 'Esci da schermo intero' : 'Apri a schermo intero'}
+        >
+          {isFullscreen ? 'Exit' : 'Full'}
+        </button>
         <div id={divId.current} style={{ width: '100%', height: '100%' }} />
         <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} />
       </div>

@@ -15,3 +15,21 @@
 .rdg-row.ephem-row-selected:hover .rdg-cell {
   background-color: #bbdefb;
 }
+
+.ephem-splitter {
+  flex-shrink: 0;
+  height: 8px;
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.ephem-splitter-bar {
+  width: 48px;
+  height: 3px;
+  border-radius: 999px;
+  background: #4a9eff;
+  opacity: 0.7;
+}
