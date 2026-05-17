@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FaMapMarkerAlt, FaPlay, FaWpforms, FaPause, FaQuestionCircle, FaCog, FaFilter } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPlay, FaPause, FaQuestionCircle, FaCog, FaFilter, FaBook } from 'react-icons/fa';
 import UTCDateTimePicker from './UTCDateTimePicker';
 import './style/position.css';
 import Modal from './common/Modal';
+import ReferencesModal from './ReferencesModal';
+
 import EphemMPCForm from './EphForm';
 import Tabs from './common/Tabs';
 import { getSetting } from '../persistence';
@@ -50,6 +52,7 @@ const MyPosition = ({
   setFovSize = () => {},
 }) => {
   const [, setError] = useState(null);
+        const [showReferencesModal, setShowReferencesModal] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showEphemParamsForm, setShowEphemParamsForm] = useState(false);
@@ -169,6 +172,9 @@ const MyPosition = ({
         onClick={() => setAutoUpdate(!autoUpdate)}>
           {autoUpdate ? <FaPause /> : <FaPlay />}
         </button>
+        <button title="Apri risorse e riferimenti" onClick={() => setShowReferencesModal(true)}>
+                  <FaBook />
+                </button>
         </div>
       </div>
       {!collapsed && (<div className="position-viewer-content">
@@ -394,6 +400,8 @@ const MyPosition = ({
 
       </Modal>
     }
+
+            <ReferencesModal open={showReferencesModal} onClose={() => setShowReferencesModal(false)} />
     </>
 
   );
