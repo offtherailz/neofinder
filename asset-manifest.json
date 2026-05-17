@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/neofinder/static/css/main.f4c3a818.css",
-    "main.js": "/neofinder/static/js/main.d0a91dfe.js",
+    "main.css": "/neofinder/static/css/main.2c26ea52.css",
+    "main.js": "/neofinder/static/js/main.d65838a5.js",
     "static/js/453.c0f977ac.chunk.js": "/neofinder/static/js/453.c0f977ac.chunk.js",
     "static/media/tabella dimensioni.png": "/neofinder/static/media/tabella dimensioni.7ecd6da201f7fe879e40.png",
     "static/media/tabella_grafica_punteggio_neocp_candidati_aggiornati.pdf": "/neofinder/static/media/tabella_grafica_punteggio_neocp_candidati_aggiornati.6f13f10a1651df24a4b2.pdf",
@@ -10,12 +10,12 @@
     "static/media/mpc.png": "/neofinder/static/media/mpc.ee4264850055e2304e6b.png",
     "static/media/logo192.png": "/neofinder/static/media/logo192.03a095978a31c23d4f81.png",
     "index.html": "/neofinder/index.html",
-    "main.f4c3a818.css.map": "/neofinder/static/css/main.f4c3a818.css.map",
-    "main.d0a91dfe.js.map": "/neofinder/static/js/main.d0a91dfe.js.map",
+    "main.2c26ea52.css.map": "/neofinder/static/css/main.2c26ea52.css.map",
+    "main.d65838a5.js.map": "/neofinder/static/js/main.d65838a5.js.map",
     "453.c0f977ac.chunk.js.map": "/neofinder/static/js/453.c0f977ac.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f4c3a818.css",
-    "static/js/main.d0a91dfe.js"
+    "static/css/main.2c26ea52.css",
+    "static/js/main.d65838a5.js"
   ]
 }
